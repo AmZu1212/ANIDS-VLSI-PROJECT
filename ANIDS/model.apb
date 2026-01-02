@@ -1,0 +1,13 @@
+// ANIDS APB MODEL DATA FORMAT
+
+// ADDRS VALUE
+0x0001 0x40     // N (max is 128)
+0x0002 0x0A     // THRESH
+0x0008 0x12     // HW byte 0  (64*128)
+0x0009 0x34
+...
+0x2008 0x01     // HL bias[0] (64)
+...
+0x2048 0x56     // OW byte 0 (128*64)
+...
+0x4048 0xFF     // OL bias[0] (128)
