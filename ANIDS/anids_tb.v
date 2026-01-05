@@ -96,7 +96,7 @@ initial begin
 	$display("ANIDS processing started.");
 
 	// first read is always slowest due to pipeline fill
-	#`FILL_CYCLES * `CLK_PERIOD;
+	#`PIPE_FILL_CYCLES * `CLK_PERIOD;
 
 	/// TODO: verify syntax & logic for this loop
 	// Poll RESULT_REG until done
@@ -126,7 +126,7 @@ end
  */
 
 
-/// TODO: maybe add streaming
+/// TODO: maybe add streaming + ask shahar about the "<= #1" for the testbench! ***
 // currently doesnt support (strb? i.e data stream)
 task cpu_write_APB(
 	input [`APB_DATA_WIDTH-1:0] addr,
