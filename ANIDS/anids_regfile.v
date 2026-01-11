@@ -9,15 +9,14 @@ module anids_regfile (
     input  wire [`APB_DATA_WIDTH - 1:0] PWDATA,
     output reg  [`APB_DATA_WIDTH - 1:0] PRDATA,
     output wire                   		PREADY,
-    output wire                   		PSLVERR
 );
 
-    // Always-ready, no error
-    assign PREADY  = 1'b1; // *** if you want wait states, it is important that you modify Pready logic.
-    assign PSLVERR = 1'b0;
+	// *** update with interrupt
+    reg PREADY;
+
 
     wire apb_wr = PSEL && PENABLE && PWRITE;
-    wire apb_rd = PSEL && !PWRITE; // PRDATA driven combinationally below
+    wire apb_rd = PSEL && !PWRITE;
 
     // ----------------------------
     // Control registers (8-bit each)
@@ -46,7 +45,7 @@ module anids_regfile (
     // Write path
     // ----------------------------
     integer i;
-    always @(posedge PCLK) begin
+    always @(posedge PCLK or negedge PRESETn) begin
         if (!PRESETn) begin
             start_reg     <= #1 {`APB_DATA_WIDTH{1'b0}};
             n_reg         <= #1 {`APB_DATA_WIDTH{1'b0}};
@@ -57,13 +56,14 @@ module anids_regfile (
             ctrl3_reg     <= #1 {`APB_DATA_WIDTH{1'b0}};
             ctrl4_reg     <= #1 {`APB_DATA_WIDTH{1'b0}};
 
-            // Optional: clear memories (can be expensive in synthesis; remove if not needed)
+            // clear memories *** change to genvar
 			for (i = 0; i < `HL_WEIGHT_BYTES; i = i + 1) HL_weights[i] <= #1 {`APB_DATA_WIDTH{1'b0}};
 			for (i = 0; i < `HL_BIAS_BYTES;   i = i + 1) HL_bias[i]    <= #1 {`APB_DATA_WIDTH{1'b0}};
 			for (i = 0; i < `OL_WEIGHT_BYTES; i = i + 1) OL_weights[i] <= #1 {`APB_DATA_WIDTH{1'b0}};
 			for (i = 0; i < `OL_BIAS_BYTES;   i = i + 1) OL_bias[i]    <= #1 {`APB_DATA_WIDTH{1'b0}};
 
 
+		// update registers to new sizes. (minimal as possible)
         end else if (apb_wr) begin
             // Control regs
             if 		(PADDR == `START_REG)       start_reg     <= #1 PWDATA;
@@ -110,7 +110,7 @@ module anids_regfile (
         else if (PADDR == `CTRL3_REG)     PRDATA = ctrl3_reg;
         else if (PADDR == `CTRL4_REG)     PRDATA = ctrl4_reg;
 
-        // Memories
+        // Memories *** fix read, we are wiritng to data not recieveing
         else if ((PADDR >= `HL_WEIGHT_BASE) && (PADDR <= `HL_WEIGHT_END)) begin
 			HL_weights[PADDR - `HL_WEIGHT_BASE] <= #1 PWDATA;
 		end

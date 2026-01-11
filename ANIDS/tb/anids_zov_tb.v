@@ -12,11 +12,9 @@ module anids_tb;
 
 // System clock & reset
 reg sys_clk;
-reg sys_reset;
+reg sys_reset_n;
 
 // APB Interface
-reg        					PCLK;
-reg        					PRESETn;
 reg  [`APB_DATA_WIDTH-1:0] 	PADDR;
 reg  [`APB_DATA_WIDTH-1:0] 	PWDATA;
 wire [`APB_DATA_WIDTH-1:0] 	PRDATA;
@@ -24,9 +22,9 @@ reg        					PSEL;
 reg        					PENABLE;
 reg        					PWRITE;
 wire       					PREADY;
-wire       					PSLVERR;
-reg  [3:0]  				PSTRB;
-reg  [2:0]  				PPROT;
+
+// done interrupt
+reg        					done;
 
 // DMA Interface
 reg 						dma_valid;
@@ -35,30 +33,27 @@ reg [`DMA_DATA_WIDTH-1:0]	dma_data;
 
 // Clocks
 always #(`CLK_PERIOD/2) 	sys_clk = ~sys_clk;
-always #(`CLK_PERIOD/2) 	PCLK    = ~PCLK;
 
 
 // ----------------------------------------------------------------------
 //                   Instantiations
 // ----------------------------------------------------------------------
-anids dut (
+anids_top dut (
     // System signals
-    .sys_clk   (sys_clk),
-    .sys_reset (sys_reset),
+    .sys_clk   		(sys_clk),
+    .sys_reset_n 	(sys_reset_n),
 
     // APB Interface
-    .pclk      (PCLK),
-    .presetN   (PRESETn),
-    .paddr     (PADDR),
-    .pwdata    (PWDATA),
-    .prdata    (PRDATA),
-    .psel      (PSEL),
-    .penable   (PENABLE),
-    .pwrite    (PWRITE),
-    .pready    (PREADY),
-    .pslverr   (PSLVERR),
-    .pstrb     (PSTRB),
-    .pprot     (PPROT),
+    .pclk      	(sys_clk),
+    .presetN   	(sys_reset_n),
+    .paddr     	(PADDR),
+    .pwdata    	(PWDATA),
+    .prdata    	(PRDATA),
+    .psel      	(PSEL),
+    .penable   	(PENABLE),
+    .pwrite    	(PWRITE),
+    .pready    	(PREADY),
+	.done 		(done)
 
     // DMA Interface
     .dma_valid (dma_valid),
@@ -66,7 +61,7 @@ anids dut (
     .dma_data  (dma_data)
 );
 
-
+/// make read/write tester pattern ***
 // ----------------------------------------------------------------------
 //                   Test Pattern
 // ----------------------------------------------------------------------
@@ -98,7 +93,7 @@ initial begin
 	// first read is always slowest due to pipeline fill
 	#`PIPE_FILL_CYCLES * `CLK_PERIOD;
 
-	/// TODO: verify syntax & logic for this loop
+	/// TODO: REFACTOR wit hdone signal in mind
 	// Poll RESULT_REG until done
 	integer k;
 	for (k = 0; k < `NUM_RESULTS; k++)
@@ -129,21 +124,21 @@ end
 /// TODO: maybe add streaming + ask shahar about the "<= #1" for the testbench! ***
 // currently doesnt support (strb? i.e data stream)
 task cpu_write_APB(
-	input [`APB_DATA_WIDTH-1:0] addr,
+	input [`APB_ADDR_WIDTH-1:0] addr,
 	input [`APB_DATA_WIDTH-1:0] data
 	);
 	begin
 		// SETUP phase
 		@(posedge PCLK);
-		PSEL   <= 1'b1;
-		PENABLE<= 1'b0;
-		PWRITE <= 1'b1;
-		PADDR  <= addr;
-		PWDATA <= data;
+		PSEL   <= #1 1'b1;
+		PENABLE<= #1 1'b0;
+		PWRITE <= #1 1'b1;
+		PADDR  <= #1 addr;
+		PWDATA <= #1 data;
 
 		// ACCESS phase
 		@(posedge PCLK);
-		PENABLE <= 1'b1;
+		PENABLE <= #1 1'b1;
 
 		// Wait for slave ready
 		while (!PREADY)
@@ -151,39 +146,39 @@ task cpu_write_APB(
 
 		// End transfer
 		@(posedge PCLK);
-		PSEL    <= 1'b0;
-		PENABLE <= 1'b0;
-		PWRITE  <= 1'b0;
+		PSEL    <= #1 1'b0;
+		PENABLE <= #1 1'b0;
+		PWRITE  <= #1 1'b0;
 	end
 endtask
 
 task cpu_read_APB(
-	input  [`APB_DATA_WIDTH-1:0] addr,
+	input  [`APB_ADDR_WIDTH-1:0] addr,
 	output [`APB_DATA_WIDTH-1:0] data
 	);
 	begin
 		// SETUP phase
 		@(posedge PCLK);
-		PSEL    <= 1'b1;
-		PENABLE <= 1'b0;
-		PWRITE  <= 1'b0;
-		PADDR   <= addr;
+		PSEL    <= #1 1'b1;
+		PENABLE <= #1 1'b0;
+		PWRITE  <= #1 1'b0;
+		PADDR   <= #1 addr;
 
 		// ACCESS phase
 		@(posedge PCLK);
-		PENABLE <= 1'b1;
+		PENABLE <= #1 1'b1;
 
 		// Wait for slave ready
 		while (!PREADY)
 			@(posedge PCLK);
 
 		// Capture read data
-		data = PRDATA;
+		data <= #1 PRDATA;
 
 		// End transfer
 		@(posedge PCLK);
-		PSEL    <= 1'b0;
-		PENABLE <= 1'b0;
+		PSEL    <= #1 1'b0;
+		PENABLE <= #1 1'b0;
 	end
 endtask
 
@@ -191,8 +186,8 @@ endtask
 task initiate_all;
 	begin
 		// Initialize all input signals
-		sys_clk    = 1'b0;
-		sys_reset  = 1'b1;
+		sys_clk    		= 1'b0;
+		sys_reset_n  	= 1'b0;
 
 		PCLK       = 1'b0;
 		PRESETn    = 1'b0;
@@ -201,16 +196,16 @@ task initiate_all;
 		PSEL       = 1'b0;
 		PENABLE    = 1'b0;
 		PWRITE     = 1'b0;
-		PSTRB      = 4'b1111; // all byte lanes active
-		PPROT      = 3'b000;  // data access, privileged, secure
+		//PSTRB      = 4'b1111; // all byte lanes active
+		//PPROT      = 3'b000;  // data access, privileged, secure
 
 		dma_valid  = 1'b0;
 		dma_data   = `DMA_DATA_WIDTH'b0;
 
 		// Release reset after some time
 		#20;
-		sys_reset  = 1'b0;
-		PRESETn    = 1'b1;
+		sys_reset_n  = 1'b1;
+		//PRESETn    = 1'b1;
 	end
 endtask
 
@@ -245,6 +240,7 @@ task automatic load_model(input string fname);
 	$fclose(fd);
 endtask
 
+// add #1's
 /// Async DMA loading task
 task automatic dma_stream_from_file(input string fname);
 	integer fd;

@@ -17,7 +17,7 @@
 `define OL_WEIGHT_BYTES   (128*64)   // 8192
 `define OL_BIAS_BYTES     (128)      // 128
 
-
+/// *** define proper addreess space + register widths
 // ANIDS Control Register Addresses
 `define START_REG		`APB_ADDR_WIDTH'h0000
 `define N_REG			`APB_ADDR_WIDTH'h0001
