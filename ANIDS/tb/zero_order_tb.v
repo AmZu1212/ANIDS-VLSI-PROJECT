@@ -113,16 +113,34 @@ initial begin
 	$finish; // also kills the forked process
 end
 
-// TASKS
-/*
- * 	APB RULE OF THUMB:
- *	| WRITE: CPU configures, loads or starts the DUT.
- *	|  READ:  CPU checks status or reads results.
- */
+/// initializes all inputs
+task initiate_all;
+	begin
+		// Initialize all input signals
+		sys_clk    		<= #1 1'b0;
+		sys_reset_n  	<= #1 1'b0;
 
+		// APB Interface
+		PCLK       <= #1 1'b0;
+		PRESETn    <= #1 1'b0;
+		PADDR      <= #1 `APB_DATA_WIDTH'b0;
+		PWDATA     <= #1 `APB_DATA_WIDTH'b0;
+		PSEL       <= #1 1'b0;
+		PENABLE    <= #1 1'b0;
+		PWRITE     <= #1 1'b0;
 
-/// TODO: maybe add streaming + ask shahar about the "<= #1" for the testbench! ***
-// currently doesnt support (strb? i.e data stream)
+		// DMA Interface
+		dma_valid  <= #1 1'b0;
+		dma_data   <= #1 `DMA_DATA_WIDTH'b0;
+
+		// finish reset
+		#10;
+		sys_reset_n  <= #1 1'b1;
+	end
+endtask
+
+// ** TODO: add write streaming
+// writes to one APB register (with address 'addr') the data 'data'
 task cpu_write_APB(
 	input [`APB_ADDR_WIDTH-1:0] addr,
 	input [`APB_DATA_WIDTH-1:0] data
@@ -152,6 +170,8 @@ task cpu_write_APB(
 	end
 endtask
 
+
+// reads one APB register, with adderss addr, returns data
 task cpu_read_APB(
 	input  [`APB_ADDR_WIDTH-1:0] addr,
 	output [`APB_DATA_WIDTH-1:0] data
@@ -182,34 +202,9 @@ task cpu_read_APB(
 	end
 endtask
 
-/// TODO: verify this is the actual values that are supposed to be here
-task initiate_all;
-	begin
-		// Initialize all input signals
-		sys_clk    		= 1'b0;
-		sys_reset_n  	= 1'b0;
 
-		PCLK       = 1'b0;
-		PRESETn    = 1'b0;
-		PADDR      = `APB_DATA_WIDTH'b0;
-		PWDATA     = `APB_DATA_WIDTH'b0;
-		PSEL       = 1'b0;
-		PENABLE    = 1'b0;
-		PWRITE     = 1'b0;
-		//PSTRB      = 4'b1111; // all byte lanes active
-		//PPROT      = 3'b000;  // data access, privileged, secure
-
-		dma_valid  = 1'b0;
-		dma_data   = `DMA_DATA_WIDTH'b0;
-
-		// Release reset after some time
-		#20;
-		sys_reset_n  = 1'b1;
-		//PRESETn    = 1'b1;
-	end
-endtask
-
-// task for loading the model values from a file
+// *** TODO: Check syntax & tasks in verilog.
+/// loads the model values from a file
 task automatic load_model(input string fname);
 	integer fd;
 	string line;
@@ -219,7 +214,7 @@ task automatic load_model(input string fname);
 	fd = $fopen(fname, "r");
 	if (fd == 0) $fatal(1, "Cannot open %s", fname);
 
-	while (!$feof(fd)) begin
+	while (!$feof(fd)) begin // * TODO: remove unnecessary complexity
 		line = "";
 		void'($fgets(line, fd));
 
@@ -240,15 +235,15 @@ task automatic load_model(input string fname);
 	$fclose(fd);
 endtask
 
-// add #1's
-/// Async DMA loading task
+// *** TODO: Check syntax & tasks in verilog.
+/// Async-ly stream DMA data from file to DUT
 task automatic dma_stream_from_file(input string fname);
 	integer fd;
 	reg [`DMA_DATA_WIDTH-1:0] vec;
 
 	// idle defaults
-	dma_valid <= 1'b0;
-	dma_data  <= {`DMA_DATA_WIDTH{1'b0}};
+	dma_valid <= #1 1'b0;
+	dma_data  <= #1 {`DMA_DATA_WIDTH{1'b0}};
 
 	fd = $fopen(fname, "r");
 	if (fd == 0)
@@ -271,8 +266,8 @@ task automatic dma_stream_from_file(input string fname);
 
 			// present data
 			@(posedge sys_clk);
-			dma_data  <= vec;
-			dma_valid <= 1'b1;
+			dma_data  <= #1 vec;
+			dma_valid <= #1 1'b1;
 
 			// wait for ack
 			while (dma_ack != 1'b1)
@@ -280,7 +275,7 @@ task automatic dma_stream_from_file(input string fname);
 
 			// drop valid after ack
 			@(posedge sys_clk);
-			dma_valid <= 1'b0;
+			dma_valid <= #1 1'b0;
 		end
 	end
 endtask
