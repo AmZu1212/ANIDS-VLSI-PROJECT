@@ -43,8 +43,8 @@ anids_top dut (
     .sys_reset_n 	(sys_reset_n),
 
     // APB Interface
-    .pclk      	(sys_clk),
-    .presetN   	(sys_reset_n),
+	.pclk	  	(sys_clk),
+	.presetN  	(sys_reset_n),
     .paddr     	(PADDR),
     .pwdata    	(PWDATA),
     .prdata    	(PRDATA),
@@ -62,7 +62,7 @@ anids_top dut (
 
 
 integer idx;
-integer testRange = `REG_COUNT;//10;
+integer testRange = `REG_COUNT;
 // ----------------------------------------------------------------------
 //                   Test Pattern - Simple APB Read/Write
 // ----------------------------------------------------------------------
@@ -70,7 +70,7 @@ reg [`APB_DATA_WIDTH-1:0] result_data;
 
 initial begin
 	$dumpfile("wave.vcd");
-  	$dumpvars(0, rw_tb);   // use your TB top module name
+  	$dumpvars(0, rw_tb);
 
 	$display("Starting ANIDS APB Read/Write Test Bench...");
 
@@ -78,30 +78,30 @@ initial begin
 	initiate_all;
 
 
-	// WRITE PHASE
+	/// WRITE PHASE
 	for (idx = 0; idx < testRange; idx = idx + 1) begin
-	cpu_write_APB(idx, idx[`APB_DATA_WIDTH-1:0]);
-	$display("Wrote reg[%0d] = %0d", idx, idx);
+		cpu_write_APB(idx, idx[`APB_DATA_WIDTH-1:0]);
+		$display("Wrote reg[%0d] = %0d", idx, idx);
 	end
 
 	$display("Write done. Starting readback and verification...");
 
-	// READ + CHECK PHASE
-	for (idx = 0; idx < testRange; idx = idx + 1) begin
-	cpu_read_APB(idx, result_data);
 
-	if (result_data !== idx[`APB_DATA_WIDTH-1:0]) begin
-		$error("FAIL: reg[%0d] read %0d, expected %0d",
-				idx, result_data, idx);
-		$finish;
-	end else begin
-		$display("PASS: reg[%0d] = %0d", idx, result_data);
-	end
+	/// READ + CHECK PHASE
+	for (idx = 0; idx < testRange; idx = idx + 1) begin
+		cpu_read_APB(idx, result_data);
+
+		if (result_data !== idx[`APB_DATA_WIDTH-1:0]) begin
+			$error("FAIL: reg[%0d] read %0d, expected %0d", idx, result_data, idx);
+			$finish;
+		end else begin
+			$display("PASS: reg[%0d] = %0d", idx, result_data);
+		end
 	end
 
 	// TB Done.
 	$display("Test Bench completed.");
-	$finish; // also kills the forked process
+	$finish;
 end
 
 
