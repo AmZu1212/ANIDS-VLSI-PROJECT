@@ -1,10 +1,22 @@
+#!/usr/bin/env python3
+
 import os
+import subprocess
+from pathlib import Path
 
-os.system(
-    "iverilog -g2012 -I ANIDS -I ANIDS/src -I ANIDS/tb "
-    "-s rw_tb -o sim.out ANIDS/tb/rw_tb.v ANIDS/src/anids_top.v"
-)
+ROOT = Path(__file__).resolve().parent
+SRC_DIR = ROOT / "ANIDS" / "src"
+TB_DIR = ROOT / "ANIDS" / "tb"
+OUT = ROOT / "sim.out"
 
-os.system("vvp sim.out")
+tb_top = TB_DIR / "rw_tb.v"
+src_files = sorted(SRC_DIR.glob("*.v"))
+sources = [tb_top] + src_files
 
-os.system("gtkwave wave.vcd")
+include_args = f"-I {ROOT/'ANIDS'} -I {SRC_DIR} -I {TB_DIR}"
+source_args = " ".join(str(p) for p in sources)
+cmd = f"iverilog -g2012 {include_args} -s rw_tb -o {OUT} {source_args}"
+
+os.system(cmd)
+os.system(f"vvp {OUT}")
+subprocess.Popen(["gtkwave", "wave.vcd"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
