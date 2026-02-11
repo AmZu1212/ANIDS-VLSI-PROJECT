@@ -1,6 +1,4 @@
-// ANIDS Top Level Defines
-
-
+// ANIDS Defines
 // Clock Period, this is 5ns period (200MHz clock)
 `define CLK_PERIOD				16'd5
 
@@ -12,6 +10,11 @@
 
 // DMA Data Width is input vector size, which is 128 bits
 `define DMA_DATA_WIDTH			128
+
+
+// LUT Address and Data Sizes
+`define LUT_ADDR_WIDTH			7
+`define LUT_DATA_WIDTH			8
 
 
 // Weight & Bias Counts
@@ -26,11 +29,13 @@
 `define N_REG					1
 `define THRESHOLD_REG			2
 `define RESULT_REG				3
-// * TODO: remove if not used ( dont forget to update addresses below!)
-`define CTRL1_REG				4
-`define CTRL2_REG				5
-`define CTRL3_REG				6
-`define CTRL4_REG				7
+
+
+// Indirect LUT Read/Write Registers
+`define LUT_ADDR				4
+`define LUT_DATA				5
+`define LUT_CTRL				6
+`define FREE_REG				7
 
 
 // Hidden Layer Register Mapping
