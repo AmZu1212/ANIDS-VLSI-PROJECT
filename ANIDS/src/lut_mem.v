@@ -35,30 +35,46 @@ module lut_mem (
 	reg [DATA_WIDTH-1:0] memory [0:RAM_DEPTH-1];
 
 
-	//			=== Write logic ===
-	genvar i;
-	generate
-		for (i = 0; i < RAM_DEPTH; i++) begin
-			always @(posedge clk or negedge resetN) begin
-				if (!resetN) begin
-					memory[i] <= #1 {DATA_WIDTH{1'b0}};
-				end
-				else if (wr_en && wr_addr == i) begin
-					memory[i] <= #1 wr_data;
-				end
-			end
-		end
-	endgenerate
-
-
-	//			=== Read logic ===
+	//			=== Read/Write logic ===
 	always @(posedge clk or negedge resetN) begin
 		if (!resetN) begin
 			rd_data <= #1 {DATA_WIDTH{1'b0}};
-		end
-		else begin
+		end else begin
+			if (wr_en) memory[wr_addr] <= #1 wr_data;
 			rd_data <= #1 memory[rd_addr];
 		end
 	end
+
+
+
+	//*** ask shahar about this:
+	//	DO I DO AS I KEPT ABOVE, OR WHAT I HAVE IN THE COMMENT BELOW?
+	//  	WHAT SYNTHESIZES INTO RAM BETTER?
+
+	// // === Write Logic ===
+	// genvar i;
+	// generate
+	// 	for (i = 0; i < RAM_DEPTH; i++) begin
+	// 		always @(posedge clk or negedge resetN) begin
+	// 			if (!resetN) begin
+	// 				memory[i] <= #1 {DATA_WIDTH{1'b0}};
+	// 			end
+	// 			else if (wr_en && wr_addr == i) begin
+	// 				memory[i] <= #1 wr_data;
+	// 			end
+	// 		end
+	// 	end
+	// endgenerate
+
+
+	// //			=== Read Logic ===
+	// always @(posedge clk or negedge resetN) begin
+	// 	if (!resetN) begin
+	// 		rd_data <= #1 {DATA_WIDTH{1'b0}};
+	// 	end
+	// 	else if (rd_addr < RAM_DEPTH) begin // safety condition, prob not necessary
+	// 		rd_data <= #1 memory[rd_addr];
+	// 	end
+	// end
 
 endmodule
