@@ -1,4 +1,4 @@
-// ANIDS Top Level Module
+// ANIDS regfile Module
 module regfile(
 		// APB Interface
 		pclk,
@@ -73,5 +73,4 @@ module regfile(
 			pready <= #1 apb_w || apb_r;   // zero-wait slave
 		end
 	end
-
 endmodule
