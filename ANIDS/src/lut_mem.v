@@ -1,4 +1,6 @@
 // ANIDS LUT Module
+`include "anids_defines.vh"
+
 module lut_mem (
 		clk,
 		resetN,
@@ -12,7 +14,7 @@ module lut_mem (
 	//			=== Parameters ===
 	parameter DATA_WIDTH = `LUT_DATA_WIDTH;
 	parameter ADDR_WIDTH = `LUT_ADDR_WIDTH;
-	parameter RAM_DEPTH  = 1 << ADDR_WIDTH;
+	parameter RAM_DEPTH  = 1 << ADDR_WIDTH; // this is = 2 ^ ADDR_WIDTH
 
 
 	//			=== System Signals ===

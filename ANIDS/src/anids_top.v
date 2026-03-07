@@ -1,4 +1,6 @@
 // ANIDS Top Level Module
+`include "anids_defines.vh"
+
 module anids_top(
 		// System signals
 		sys_clk,

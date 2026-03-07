@@ -1,4 +1,6 @@
 // ANIDS regfile Module
+`include "anids_defines.vh"
+
 module regfile(
 		// APB Interface
 		pclk,
