@@ -5,7 +5,7 @@
 
 // APB can work with 8, 16, 32 bit data width
 `define APB_DATA_WIDTH			8
-`define APB_ADDR_WIDTH			16 			// 15 bits needed, but we use 16.
+`define APB_ADDR_WIDTH			16 							// 15 bits needed, but we use 16.
 
 
 // DMA Data Width is input vector size, which is 128 bits
@@ -13,14 +13,18 @@
 
 // Memory Fetch Unit widths
 `define MFU_DATA_WIDTH			`DMA_DATA_WIDTH
-`define MFU_FEATURE_WIDTH		`MFU_DATA_WIDTH		// stored feature vector width
+`define MFU_FEATURE_WIDTH		`MFU_DATA_WIDTH				// stored feature vector width
 
 // Pipeline Manager widths and history depth
-`define PIPELINE_VECTOR_WIDTH	`MFU_FEATURE_WIDTH	// vector width propagated through pipeline manager
-`define PIPELINE_COUNTER_WIDTH	7				// counter width for indices 0..127
-`define PIPELINE_HISTORY_DEPTH	2				// number of coarse vector buffers before validation
-`define PIPELINE_STAGE_CYCLES	64				// 128-bit vector processed over 64 cycles
-`define PIPELINE_STAGE_COUNT_W	6				// counter width for 0..63 stage timing
+`define PIPELINE_VECTOR_WIDTH	`MFU_FEATURE_WIDTH			// vector width propagated through pipeline manager
+`define PIPELINE_COUNTER_WIDTH	7							// counter width for indices 0..127
+`define PIPELINE_HISTORY_DEPTH	2							// number of coarse vector buffers before validation
+`define PIPELINE_STAGE_CYCLES	64							// 128-bit vector processed over 64 cycles
+`define PIPELINE_STAGE_COUNT_W	6							// counter width for 0..63 stage timing
+
+// Input layer widths
+`define INPUT_LAYER_FEATURE_WIDTH	`PIPELINE_VECTOR_WIDTH	// full feature vector width seen by input layer
+`define INPUT_LAYER_PAIR_WIDTH		2						// number of feature bits processed per counter step
 
 // LUT Address and Data Sizes
 `define LUT_ADDR_WIDTH			7
@@ -28,15 +32,6 @@
 
 `define RELU_WIDTH 				8
 `define LF_OUT_WIDTH			8
-
-
-
-
-
-
-
-
-
 
 
 
