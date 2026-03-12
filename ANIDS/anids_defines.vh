@@ -26,6 +26,14 @@
 `define INPUT_LAYER_FEATURE_WIDTH	`PIPELINE_VECTOR_WIDTH	// full feature vector width seen by input layer
 `define INPUT_LAYER_PAIR_WIDTH		2						// number of feature bits processed per counter step
 
+// Hidden layer unit widths
+`define HL_FEATURE_PAIR_WIDTH		`INPUT_LAYER_PAIR_WIDTH	// number of feature bits consumed per cycle
+`define HL_WEIGHT_WIDTH				8						// signed Q0.7 weight width
+`define HL_BIAS_WIDTH				8						// signed Q0.7 bias width
+`define HL_RESULT_WIDTH				8						// signed Q0.7 hidden neuron output width
+`define HL_PAIR_SUM_WIDTH			9						// sum of two weighted feature contributions
+`define HL_ACC_WIDTH				15						// accumulation register width before truncation
+
 // LUT Address and Data Sizes
 `define LUT_ADDR_WIDTH			7
 `define LUT_DATA_WIDTH			8
