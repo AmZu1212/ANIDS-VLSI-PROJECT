@@ -65,7 +65,7 @@ module hidden_layer_unit (
 	wire signed [ACC_WIDTH-1:0] acc_next =
 		acc + $signed({{(ACC_WIDTH-PAIR_SUM_WIDTH){pair_sum[PAIR_SUM_WIDTH-1]}}, pair_sum});
 
-	// trun8 - we take MSBs + sign bit
+	// trunc8 - we take MSBs + sign bit --> trunc_result = {sign bit , 7 more data bits}
 	wire signed [RESULT_WIDTH-1:0] trunc8 = acc_next[ACC_WIDTH-1 -: RESULT_WIDTH];
 
 

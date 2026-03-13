@@ -65,8 +65,8 @@
 
 
 // Hidden Layer Register Mapping
-`define HL_WEIGHT_BASE			8
-`define HL_BIAS_BASE			`HL_WEIGHT_BASE + `HL_WEIGHT_COUNT
+`define HL_WEIGHT_BASE			8 // we have 128 * 64 of these
+`define HL_BIAS_BASE			`HL_WEIGHT_BASE + `HL_WEIGHT_COUNT // and 64 of these
 
 
 // Output Layer Register Mapping
