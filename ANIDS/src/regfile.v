@@ -11,7 +11,8 @@ module regfile(
 		psel,
 		penable,
 		pwrite,
-		pready
+		pready,
+		regfile
 	);
 
 
@@ -42,7 +43,7 @@ module regfile(
 
 
 	// Regfile
-	reg [`APB_DATA_WIDTH-1:0] regfile [0: `REG_COUNT-1];
+	output reg [`APB_DATA_WIDTH-1:0] regfile [0: `REG_COUNT-1];
 
 
 	// Regfile read/write logic
