@@ -10,7 +10,7 @@ module pipeline_manager_tb;
 	reg                         clk;
 	reg                         resetN;
 	reg                         start;
-	reg  [COUNTER_WIDTH-1:0]    N;
+	reg  [`APB_DATA_WIDTH-1:0]  N;
 	reg                         valid;
 	reg  [VECTOR_WIDTH-1:0]     mem_data;
 	wire                        fetch;
@@ -62,7 +62,7 @@ module pipeline_manager_tb;
 		clk          = 1'b0;
 		resetN       = 1'b0;
 		start        = 1'b0;
-		N            = 7'd3;
+		N            = 8'd8;
 		valid        = 1'b0;
 		mem_data     = {VECTOR_WIDTH{1'b0}};
 		#2;
@@ -115,7 +115,7 @@ module pipeline_manager_tb;
 		check_outputs(1'b0, 1'b1, 7'd3,
 			128'h11112222333344445555666677778888,
 			128'h00000000000000000000000000000000,
-			"counter reaches N");
+			"counter reaches last pair index");
 
 		@(posedge clk);
 		#2;

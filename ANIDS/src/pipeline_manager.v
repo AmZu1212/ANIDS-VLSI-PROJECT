@@ -28,7 +28,7 @@ module pipeline_manager (
 	input  wire                         clk;
 	input  wire                         resetN;
 	input  wire                         start;
-	input  wire [COUNTER_WIDTH-1:0]     N;					// 128 vector size
+	input  wire [`APB_DATA_WIDTH-1:0]   N;					// vector size, e.g. 128
 
 	// data vector signals
 	input  wire [VECTOR_WIDTH-1:0]      mfu_features;		// new data vector
@@ -56,6 +56,11 @@ module pipeline_manager (
 	localparam STATE_IDLE        = 2'd0;
 	localparam STATE_WAIT_VECTOR = 2'd1;
 	localparam STATE_RUN         = 2'd2;
+
+	// Input layer / hidden layer consume 2 features per cycle, so the
+	// pipeline counter runs over pair-steps rather than raw feature bits.
+	wire [COUNTER_WIDTH-1:0] last_pair_index =
+		((N >> 1) - 1'b1);
 
 
 	// ----------------------------------------------------------------------
@@ -128,7 +133,7 @@ module pipeline_manager (
 					else begin
 						enable <= #1 1'b1;
 						// increment counter until we need to fetch new vector
-						if (counter == N) begin
+						if (counter == last_pair_index) begin
 							counter <= #1 {COUNTER_WIDTH{1'b0}};
 							fetch   <= #1 1'b1;
 							enable  <= #1 1'b0;
