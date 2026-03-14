@@ -22,10 +22,21 @@ def main(argv: list[str]) -> int:
         usage()
         return 1
 
-    # Resolve testbench path (absolute or relative). If only a name is given, fall back to TB_DIR.
+    # Resolve testbench path (absolute or relative). If only a name is given, search under TB_DIR.
     tb_arg = Path(argv[1])
-    tb_path = tb_arg if tb_arg.is_file() else (TB_DIR / tb_arg.name)
-    tb_path = tb_path.resolve()
+    if tb_arg.is_file():
+        tb_path = tb_arg.resolve()
+    else:
+        matches = sorted(TB_DIR.rglob(tb_arg.name))
+        if len(matches) == 1:
+            tb_path = matches[0].resolve()
+        elif len(matches) > 1:
+            print(f"Testbench name is ambiguous: {tb_arg.name}")
+            for match in matches:
+                print(f"  - {match}")
+            return 1
+        else:
+            tb_path = (TB_DIR / tb_arg.name).resolve()
     if not tb_path.is_file():
         print(f"Testbench file not found: {tb_arg}")
         return 1
@@ -33,16 +44,17 @@ def main(argv: list[str]) -> int:
     top_module = tb_path.stem
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out_path = OUT_DIR / f"{OUT_BASENAME}_{top_module}.out"
-    src_files = sorted(SRC_DIR.glob("*.v"))
+    src_files = sorted(SRC_DIR.rglob("*.v"))
     sources = [tb_path] + src_files
 
     # Build include path list, deduplicated
     include_paths = [
         ROOT / "ANIDS",
-        SRC_DIR,
         TB_DIR,
         tb_path.parent,
     ]
+    include_paths.extend(path for path in SRC_DIR.rglob("*") if path.is_dir())
+    include_paths.extend(path for path in TB_DIR.rglob("*") if path.is_dir())
     seen = set()
     include_args = []
     for inc in include_paths:
