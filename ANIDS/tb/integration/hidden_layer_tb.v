@@ -8,11 +8,12 @@ module hidden_layer_tb;
 	localparam RESULT_WIDTH       = `HL_RESULT_WIDTH;
 	localparam COUNTER_WIDTH      = `PIPELINE_COUNTER_WIDTH;
 	localparam NEURON_COUNT       = 64;
+	localparam N_WIDTH            = `APB_DATA_WIDTH;
 
 	reg                                  clk;
 	reg                                  resetN;
 	reg                                  enable;
-	reg  [COUNTER_WIDTH-1:0]             N;
+	reg  [N_WIDTH-1:0]                   N;
 	reg  [FEATURE_PAIR_WIDTH-1:0]        features;
 	reg  [COUNTER_WIDTH-1:0]             counter;
 
@@ -38,6 +39,9 @@ module hidden_layer_tb;
 		.penable (penable),
 		.pwrite  (pwrite),
 		.pready  (pready),
+		.hw_wr_en   (1'b0),
+		.hw_wr_addr ({`APB_ADDR_WIDTH{1'b0}}),
+		.hw_wr_data ({`APB_DATA_WIDTH{1'b0}}),
 		.regfile (regfile_bus)
 	);
 
@@ -74,7 +78,7 @@ module hidden_layer_tb;
 		clk      = 1'b0;
 		resetN   = 1'b0;
 		enable   = 1'b0;
-		N        = 7'd3;
+		N        = 8'd4;
 		features = 2'b00;
 		counter  = {COUNTER_WIDTH{1'b0}};
 		paddr    = '0;
@@ -151,7 +155,7 @@ module hidden_layer_tb;
 	begin
 		$display("SECTION: weight indexing");
 		reset_dut;
-		N = 7'd7; // 4 pair-steps, last pair index is 3
+		N = 8'd8; // 4 pair-steps, last pair index is 3
 
 		// Neuron 3: only pair index 3 should contribute -> result 1
 		cpu_write_APB(`HL_WEIGHT_BASE + (3 * 128) + 6, 8'd64);

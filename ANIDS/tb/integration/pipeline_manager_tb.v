@@ -15,6 +15,8 @@ module pipeline_manager_tb;
 	reg  [VECTOR_WIDTH-1:0]     mem_data;
 	wire                        fetch;
 	wire                        enable;
+	wire                        output_enable;
+	wire                        loss_enable;
 	wire                        mfu_ready;
 	wire [VECTOR_WIDTH-1:0]     mfu_features;
 	wire                        mfu_updated;
@@ -26,17 +28,19 @@ module pipeline_manager_tb;
 		.VECTOR_WIDTH  (VECTOR_WIDTH),
 		.COUNTER_WIDTH (COUNTER_WIDTH)
 	) dut (
-		.clk            (clk),
-		.resetN         (resetN),
-		.start          (start),
-		.N              (N),
-		.mfu_features   (mfu_features),
-		.mfu_updated    (mfu_updated),
-		.fetch          (fetch),
-		.enable         (enable),
-		.next_vector    (next_vector),
-		.validate_vector(validate_vector),
-		.counter        (counter)
+		.clk             (clk),
+		.resetN          (resetN),
+		.start           (start),
+		.N               (N),
+		.mfu_features    (mfu_features),
+		.mfu_updated     (mfu_updated),
+		.fetch           (fetch),
+		.enable          (enable),
+		.output_enable   (output_enable),
+		.loss_enable     (loss_enable),
+		.next_vector     (next_vector),
+		.validate_vector (validate_vector),
+		.counter         (counter)
 	);
 
 	mem_fetch_unit #(
@@ -59,15 +63,15 @@ module pipeline_manager_tb;
 		$dumpfile("pipeline_manager_tb.vcd");
 		$dumpvars(0, pipeline_manager_tb);
 
-		clk          = 1'b0;
-		resetN       = 1'b0;
-		start        = 1'b0;
-		N            = 8'd8;
-		valid        = 1'b0;
-		mem_data     = {VECTOR_WIDTH{1'b0}};
+		clk      = 1'b0;
+		resetN   = 1'b0;
+		start    = 1'b0;
+		N        = 8'd8; // four pair-steps per epoch
+		valid    = 1'b0;
+		mem_data = {VECTOR_WIDTH{1'b0}};
 		#2;
 
-		check_outputs(1'b0, 1'b0, 7'd0,
+		check_outputs(1'b0, 1'b0, 1'b0, 1'b0, 7'd0,
 			128'h00000000000000000000000000000000,
 			128'h00000000000000000000000000000000,
 			"reset clears outputs");
@@ -75,95 +79,47 @@ module pipeline_manager_tb;
 		resetN <= 1'b1;
 		@(posedge clk);
 		#2;
-		check_outputs(1'b0, 1'b0, 7'd0,
+		check_outputs(fetch, 1'b0, 1'b0, 1'b0, 7'd0,
 			128'h00000000000000000000000000000000,
 			128'h00000000000000000000000000000000,
 			"idle before start");
 
 		start <= 1'b1;
-		@(posedge clk);
-		#2;
-		check_outputs(1'b1, 1'b0, 7'd0,
-			128'h00000000000000000000000000000000,
-			128'h00000000000000000000000000000000,
-			"start requests first vector");
-
+		wait (fetch === 1'b1);
 		send_vector(128'h11112222333344445555666677778888);
+		wait (enable === 1'b1);
 		@(posedge clk);
 		#2;
-		check_outputs(1'b0, 1'b1, 7'd0,
+		check_outputs(fetch, 1'b1, 1'b0, 1'b0, counter,
 			128'h11112222333344445555666677778888,
 			128'h00000000000000000000000000000000,
-			"first vector loads and run starts");
-
-		@(posedge clk);
-		#2;
-		check_outputs(1'b0, 1'b1, 7'd1,
-			128'h11112222333344445555666677778888,
-			128'h00000000000000000000000000000000,
-			"counter increments while running");
-
-		@(posedge clk);
-		#2;
-		check_outputs(1'b0, 1'b1, 7'd2,
-			128'h11112222333344445555666677778888,
-			128'h00000000000000000000000000000000,
-			"counter continues to increment");
-
-		@(posedge clk);
-		#2;
-		check_outputs(1'b0, 1'b1, 7'd3,
-			128'h11112222333344445555666677778888,
-			128'h00000000000000000000000000000000,
-			"counter reaches last pair index");
-
-		@(posedge clk);
-		#2;
-		check_outputs(1'b1, 1'b0, 7'd0,
-			128'h11112222333344445555666677778888,
-			128'h00000000000000000000000000000000,
-			"vector done requests next fetch and stalls");
+			"first epoch starts with hidden stage only");
 
 		send_vector(128'h9999AAAABBBBCCCCDDDDEEEEFFFF0000);
-		@(posedge clk);
-		#2;
-		check_outputs(1'b0, 1'b1, 7'd0,
+		run_to_epoch_start;
+		check_outputs(fetch, 1'b1, 1'b1, 1'b0, 7'd0,
 			128'h9999AAAABBBBCCCCDDDDEEEEFFFF0000,
 			128'h00000000000000000000000000000000,
-			"second vector loads and restarts counter");
-
-		run_until_fetch;
-		check_outputs(1'b1, 1'b0, 7'd0,
-			128'h9999AAAABBBBCCCCDDDDEEEEFFFF0000,
-			128'h00000000000000000000000000000000,
-			"second vector completes and requests third vector");
+			"second epoch enables output stage");
 
 		send_vector(128'h0123456789ABCDEFFEDCBA9876543210);
-		@(posedge clk);
-		#2;
-		check_outputs(1'b0, 1'b1, 7'd0,
+		run_to_epoch_start;
+		check_outputs(fetch, 1'b1, 1'b1, 1'b1, 7'd0,
 			128'h0123456789ABCDEFFEDCBA9876543210,
-			128'h00000000000000000000000000000000,
-			"third vector loads while validate buffer is still empty");
-
-		run_until_fetch;
-		check_outputs(1'b1, 1'b0, 7'd0,
-			128'h0123456789ABCDEFFEDCBA9876543210,
-			128'h00000000000000000000000000000000,
-			"third vector completes and requests fourth vector");
+			128'h11112222333344445555666677778888,
+			"third epoch enables loss stage and aligns validate vector");
 
 		send_vector(128'h13579BDF2468ACE013579BDF2468ACE0);
-		@(posedge clk);
-		#2;
-		check_outputs(1'b0, 1'b1, 7'd0,
+		run_to_epoch_start;
+		check_outputs(fetch, 1'b1, 1'b1, 1'b1, 7'd0,
 			128'h13579BDF2468ACE013579BDF2468ACE0,
-			128'h11112222333344445555666677778888,
-			"fourth vector load updates validate vector from first input");
+			128'h9999AAAABBBBCCCCDDDDEEEEFFFF0000,
+			"steady-state pipeline keeps all stages enabled");
 
 		start <= 1'b0;
 		@(posedge clk);
 		#2;
-		check_outputs(1'b0, 1'b0, 7'd0,
+		check_outputs(1'b0, 1'b0, 1'b0, 1'b0, 7'd0,
 			128'h00000000000000000000000000000000,
 			128'h00000000000000000000000000000000,
 			"start low returns module to idle");
@@ -174,7 +130,9 @@ module pipeline_manager_tb;
 
 	task check_outputs(
 		input                      expected_fetch,
-		input                      expected_enable,
+		input                      expected_hidden_enable,
+		input                      expected_output_enable,
+		input                      expected_loss_enable,
 		input [COUNTER_WIDTH-1:0]  expected_counter,
 		input [VECTOR_WIDTH-1:0]   expected_next_vector,
 		input [VECTOR_WIDTH-1:0]   expected_validate_vector,
@@ -182,12 +140,15 @@ module pipeline_manager_tb;
 	);
 	begin
 		if (fetch !== expected_fetch ||
-			enable !== expected_enable ||
+			enable !== expected_hidden_enable ||
+			output_enable !== expected_output_enable ||
+			loss_enable !== expected_loss_enable ||
 			counter !== expected_counter ||
 			next_vector !== expected_next_vector ||
 			validate_vector !== expected_validate_vector) begin
-			$error("FAIL: %0s | fetch=%0b expected_fetch=%0b enable=%0b expected_enable=%0b counter=%0d expected_counter=%0d next=%032h expected_next=%032h validate=%032h expected_validate=%032h",
-				test_name, fetch, expected_fetch, enable, expected_enable,
+			$error("FAIL: %0s | fetch=%0b expected_fetch=%0b hidden=%0b expected_hidden=%0b output=%0b expected_output=%0b loss=%0b expected_loss=%0b counter=%0d expected_counter=%0d next=%032h expected_next=%032h validate=%032h expected_validate=%032h",
+				test_name, fetch, expected_fetch, enable, expected_hidden_enable,
+				output_enable, expected_output_enable, loss_enable, expected_loss_enable,
 				counter, expected_counter, next_vector, expected_next_vector,
 				validate_vector, expected_validate_vector);
 			$finish;
@@ -212,11 +173,9 @@ module pipeline_manager_tb;
 	end
 	endtask
 
-	task run_until_fetch;
+	task run_to_epoch_start;
 	begin
-		@(posedge clk);
-		#2;
-		while (fetch !== 1'b1) begin
+		while (counter !== 7'd0 || enable !== 1'b1) begin
 			@(posedge clk);
 			#2;
 		end

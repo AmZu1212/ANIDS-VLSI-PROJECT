@@ -9,11 +9,12 @@ module hidden_layer_unit_tb;
 	localparam BIAS_WIDTH         = `HL_BIAS_WIDTH;
 	localparam RESULT_WIDTH       = `HL_RESULT_WIDTH;
 	localparam COUNTER_WIDTH      = `PIPELINE_COUNTER_WIDTH;
+	localparam N_WIDTH            = `APB_DATA_WIDTH;
 
 	reg                                 clk;
 	reg                                 resetN;
 	reg                                 enable;
-	reg  [COUNTER_WIDTH-1:0]            N;
+	reg  [N_WIDTH-1:0]                  N;
 	reg  [COUNTER_WIDTH-1:0]            counter;
 	reg  [FEATURE_PAIR_WIDTH-1:0]       features_in;
 	reg  signed [WEIGHT_WIDTH-1:0]      weight_0;
@@ -45,7 +46,7 @@ module hidden_layer_unit_tb;
 		clk         = 1'b0;
 		resetN      = 1'b0;
 		enable      = 1'b0;
-		N           = 7'd3;
+		N           = 8'd4;
 		counter     = {COUNTER_WIDTH{1'b0}};
 		features_in = {FEATURE_PAIR_WIDTH{1'b0}};
 		weight_0    = '0;
@@ -92,7 +93,7 @@ module hidden_layer_unit_tb;
 
 		// Case 2: positive saturation after bias over the full 64 pair-steps.
 		enable      = 1'b1;
-		N           = 7'd127;
+		N           = 8'd128;
 		counter     = 7'd0;
 		features_in = 2'b11;
 		weight_0    = 8'sd127;
@@ -113,7 +114,7 @@ module hidden_layer_unit_tb;
 		#2;
 
 		enable      = 1'b1;
-		N           = 7'd127;
+		N           = 8'd128;
 		counter     = 7'd0;
 		features_in = 2'b11;
 		weight_0    = -8'sd128;
