@@ -20,6 +20,7 @@ module hidden_layer (
 	parameter COUNTER_WIDTH      = `PIPELINE_COUNTER_WIDTH;
 	parameter REGFILE_ADDR_WIDTH = `APB_ADDR_WIDTH;
 	parameter NEURON_COUNT       = 64;
+	parameter N_WIDTH            = `APB_DATA_WIDTH;
 
 	// ----------------------------------------------------------------------
 	//                  		I/O Ports
@@ -27,7 +28,7 @@ module hidden_layer (
 	input  wire                                     clk;
 	input  wire                                     resetN;
 	input  wire                                     enable;
-	input  wire [COUNTER_WIDTH-1:0]                 N;
+	input  wire [N_WIDTH-1:0]                       N;
 	input  wire [FEATURE_PAIR_WIDTH-1:0]            features;
 	input  wire [COUNTER_WIDTH-1:0]                 counter;
 	input  wire signed [`APB_DATA_WIDTH-1:0]        regfile [0:`REG_COUNT-1];
@@ -35,7 +36,7 @@ module hidden_layer (
 	output wire                                     ready   [0:NEURON_COUNT-1];
 
 	// ----------------------------------------------------------------------
-	//                  		Hidden Neuron Bank
+	//                  		Hidden Neuron Bank + ReLU
 	// ----------------------------------------------------------------------
 	genvar i;
 	generate
@@ -46,6 +47,7 @@ module hidden_layer (
 			// counter * 2 is the index of the feature pair
 			wire [REGFILE_ADDR_WIDTH-1:0] weight_idx0 = WEIGHT_BASE + (counter * 2);
 			wire [REGFILE_ADDR_WIDTH-1:0] weight_idx1 = WEIGHT_BASE + (counter * 2) + 1'b1;
+			wire signed [RESULT_WIDTH-1:0] pre_relu_result;
 
 			hidden_layer_unit neuron_inst (
 				.clk         (clk),
@@ -57,8 +59,15 @@ module hidden_layer (
 				.weight_0    (regfile[weight_idx0]),
 				.weight_1    (regfile[weight_idx1]),
 				.bias        (regfile[BIAS_INDEX]),
-				.result      (results[i]),
+				.result      (pre_relu_result),
 				.ready       (ready[i])
+			);
+
+			relu_unit relu_inst (
+				.in_data  (pre_relu_result),
+				.resetN   (resetN),
+				.ready    (1'b1),
+				.out_data (results[i])
 			);
 		end
 	endgenerate

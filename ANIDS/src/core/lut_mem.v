@@ -37,13 +37,22 @@ module lut_mem (
 	reg [DATA_WIDTH-1:0] memory [0:RAM_DEPTH-1];
 
 
-	//			=== Read/Write logic ===
+	//			=== Write logic ===
 	always @(posedge clk or negedge resetN) begin
 		if (!resetN) begin
-			rd_data <= #1 {DATA_WIDTH{1'b0}};
-		end else begin
+		end
+		else begin
 			if (wr_en) memory[wr_addr] <= #1 wr_data;
-			rd_data <= #1 memory[rd_addr];
+		end
+	end
+
+	//			=== Read logic ===
+	always @(*) begin
+		if (!resetN) begin
+			rd_data = {DATA_WIDTH{1'b0}};
+		end
+		else begin
+			rd_data = memory[rd_addr];
 		end
 	end
 

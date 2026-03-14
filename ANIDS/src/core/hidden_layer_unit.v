@@ -22,6 +22,7 @@ module hidden_layer_unit (
 	parameter COUNTER_WIDTH      = `PIPELINE_COUNTER_WIDTH;
 	parameter PAIR_SUM_WIDTH     = `HL_PAIR_SUM_WIDTH;
 	parameter ACC_WIDTH          = `HL_ACC_WIDTH;
+	parameter N_WIDTH            = `APB_DATA_WIDTH;
 
 	// ----------------------------------------------------------------------
 	//                  		I/O Ports
@@ -29,7 +30,7 @@ module hidden_layer_unit (
 	input  wire                                 clk;
 	input  wire                                 resetN;
 	input  wire                                 enable;
-	input  wire [COUNTER_WIDTH-1:0]             N;
+	input  wire [N_WIDTH-1:0]                   N;
 	input  wire [COUNTER_WIDTH-1:0]             counter;
 
 	input  wire [FEATURE_PAIR_WIDTH-1:0]        features_in;
@@ -48,7 +49,7 @@ module hidden_layer_unit (
 
 	//*** check this counter calc later
 	wire [COUNTER_WIDTH-1:0] last_pair_index =
-		((({1'b0, N} + 1'b1) >> 1) - 1'b1);
+		((N >> 1) - 1'b1);
 
 	// first 2 "multipliers" - in this case they are muxes, due to 1-hot encoding of the input vector.
 	wire signed [WEIGHT_WIDTH-1:0] gated_weight_0 =

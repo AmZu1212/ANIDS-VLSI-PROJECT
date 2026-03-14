@@ -12,6 +12,9 @@ module regfile(
 		penable,
 		pwrite,
 		pready,
+		hw_wr_en,
+		hw_wr_addr,
+		hw_wr_data,
 		regfile
 	);
 
@@ -30,6 +33,9 @@ module regfile(
 	input  wire [`APB_DATA_WIDTH-1:0] 	pwdata;
 	output reg 	[`APB_DATA_WIDTH-1:0]	prdata;
 	output reg                   		pready;
+	input  wire                   		hw_wr_en;
+	input  wire [`APB_ADDR_WIDTH-1:0]	hw_wr_addr;
+	input  wire [`APB_DATA_WIDTH-1:0] 	hw_wr_data;
 
 
 	// ----------------------------------------------------------------------
@@ -54,6 +60,9 @@ module regfile(
 				if (!presetN) begin
 					regfile[i] <= #1 {`APB_DATA_WIDTH{1'b0}};
 					// pready <= 1'b0;
+				end
+				else if (hw_wr_en && hw_wr_addr == i) begin
+					regfile[i] <= #1 hw_wr_data;
 				end
 				else if (apb_w && target == i) begin
 					regfile[i] <= #1 pwdata;
