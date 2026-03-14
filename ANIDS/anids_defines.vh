@@ -34,8 +34,28 @@
 `define HL_PAIR_SUM_WIDTH			9						// sum of two weighted feature contributions
 `define HL_ACC_WIDTH				15						// accumulation register width before truncation
 
+// Output layer unit widths
+`define OL_INPUT_WIDTH				8						// signed Q0.7 hidden-layer input width
+`define OL_WEIGHT_WIDTH				8						// signed Q0.7 output-layer weight width
+`define OL_BIAS_WIDTH				8						// signed Q0.7 output-layer bias width
+`define OL_RESULT_WIDTH				8						// signed Q0.7 output-layer result width
+`define OL_PRODUCT_WIDTH			16						// full signed 8x8 multiply width
+`define OL_TRUNC_PRODUCT_WIDTH		8						// product truncated back to Q0.7
+`define OL_ACC_WIDTH				15						// accumulation width before final truncation
+
+// Loss function widths
+`define LF_FEATURE_PAIR_WIDTH		`INPUT_LAYER_PAIR_WIDTH	// number of original feature bits consumed per cycle
+`define LF_RESULT_IN_WIDTH			8						// compared result width
+`define LF_ABS_WIDTH				8						// absolute delta width
+`define LF_PAIR_SUM_WIDTH			9						// sum of two absolute deltas
+`define LF_ACC_WIDTH				15						// accumulation register width before truncation
+
+// Sigmoid LUT address mapper widths
+`define MMAP_IN_WIDTH				8						// signed Q0.7 value width before LUT lookup
+`define MMAP_ADDR_WIDTH				`LUT_ADDR_WIDTH		// LUT address width after mapping
+
 // LUT Address and Data Sizes
-`define LUT_ADDR_WIDTH			7
+`define LUT_ADDR_WIDTH			8
 `define LUT_DATA_WIDTH			8
 
 `define RELU_WIDTH 				8
