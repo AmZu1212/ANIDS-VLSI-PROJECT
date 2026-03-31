@@ -59,9 +59,9 @@ module anids_core (
 	// ----------------------------------------------------------------------
 	//                  		Pipeline Control
 	// ----------------------------------------------------------------------
-	wire                               hidden_enable;
-	wire                               output_enable;
-	wire                               loss_enable;
+	wire                               hidden_layer_enable;
+	wire                               output_layer_enable;
+	wire                               loss_layer_enable;
 	wire [FEATURE_WIDTH-1:0]           next_vector;
 	wire [FEATURE_WIDTH-1:0]           validate_vector;
 	wire [COUNTER_WIDTH-1:0]           counter;
@@ -73,13 +73,13 @@ module anids_core (
 		.N               (vector_length),
 		.mfu_features    (mfu_features),
 		.mfu_updated     (mfu_updated),
-		.fetch           (fetch_next_vector),
-		.enable          (hidden_enable),
-		.output_enable   (output_enable),
-		.loss_enable     (loss_enable),
-		.next_vector     (next_vector),
-		.validate_vector (validate_vector),
-		.counter         (counter)
+		.fetch               (fetch_next_vector),
+		.hidden_layer_enable (hidden_layer_enable),
+		.output_layer_enable (output_layer_enable),
+		.loss_layer_enable   (loss_layer_enable),
+		.next_vector         (next_vector),
+		.validate_vector     (validate_vector),
+		.counter             (counter)
 	);
 
 	// ----------------------------------------------------------------------
@@ -91,7 +91,7 @@ module anids_core (
 	input_layer input_layer_inst (
 		.clk              (clk),
 		.resetN           (resetN),
-		.enable           (hidden_enable),
+		.enable           (hidden_layer_enable),
 		.features         (next_vector),
 		.counter          (counter),
 		.current_features (current_features)
@@ -100,7 +100,7 @@ module anids_core (
 	input_layer validate_input_layer_inst (
 		.clk              (clk),
 		.resetN           (resetN),
-		.enable           (loss_enable),
+		.enable           (loss_layer_enable),
 		.features         (validate_vector),
 		.counter          (counter),
 		.current_features (validate_features)
@@ -115,7 +115,7 @@ module anids_core (
 	hidden_layer hidden_layer_inst (
 		.clk      (clk),
 		.resetN   (resetN),
-		.enable   (hidden_enable),
+		.enable   (hidden_layer_enable),
 		.N        (vector_length),
 		.features (current_features),
 		.counter  (counter),
@@ -133,7 +133,7 @@ module anids_core (
 	output_layer output_layer_inst (
 		.clk            (clk),
 		.resetN         (resetN),
-		.enable         (output_enable),
+		.enable         (output_layer_enable),
 		.N              (vector_length),
 		.hidden_results (hidden_results),
 		.counter        (counter),
@@ -154,7 +154,7 @@ module anids_core (
 	loss_function loss_function_inst (
 		.clk         (clk),
 		.resetN      (resetN),
-		.enable      (loss_enable),
+		.enable      (loss_layer_enable),
 		.N           (vector_length),
 		.counter     (counter),
 		.lut_wr_addr (lut_wr_addr),

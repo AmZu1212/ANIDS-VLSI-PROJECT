@@ -14,9 +14,9 @@ module pipeline_manager_tb;
 	reg                         valid;
 	reg  [VECTOR_WIDTH-1:0]     mem_data;
 	wire                        fetch;
-	wire                        enable;
-	wire                        output_enable;
-	wire                        loss_enable;
+	wire                        hidden_layer_enable;
+	wire                        output_layer_enable;
+	wire                        loss_layer_enable;
 	wire                        mfu_ready;
 	wire [VECTOR_WIDTH-1:0]     mfu_features;
 	wire                        mfu_updated;
@@ -34,13 +34,13 @@ module pipeline_manager_tb;
 		.N               (N),
 		.mfu_features    (mfu_features),
 		.mfu_updated     (mfu_updated),
-		.fetch           (fetch),
-		.enable          (enable),
-		.output_enable   (output_enable),
-		.loss_enable     (loss_enable),
-		.next_vector     (next_vector),
-		.validate_vector (validate_vector),
-		.counter         (counter)
+		.fetch               (fetch),
+		.hidden_layer_enable (hidden_layer_enable),
+		.output_layer_enable (output_layer_enable),
+		.loss_layer_enable   (loss_layer_enable),
+		.next_vector         (next_vector),
+		.validate_vector     (validate_vector),
+		.counter             (counter)
 	);
 
 	mem_fetch_unit #(
@@ -87,7 +87,7 @@ module pipeline_manager_tb;
 		start <= 1'b1;
 		wait (fetch === 1'b1);
 		send_vector(128'h11112222333344445555666677778888);
-		wait (enable === 1'b1);
+		wait (hidden_layer_enable === 1'b1);
 		@(posedge clk);
 		#2;
 		check_outputs(fetch, 1'b1, 1'b0, 1'b0, counter,
@@ -140,15 +140,15 @@ module pipeline_manager_tb;
 	);
 	begin
 		if (fetch !== expected_fetch ||
-			enable !== expected_hidden_enable ||
-			output_enable !== expected_output_enable ||
-			loss_enable !== expected_loss_enable ||
+			hidden_layer_enable !== expected_hidden_enable ||
+			output_layer_enable !== expected_output_enable ||
+			loss_layer_enable !== expected_loss_enable ||
 			counter !== expected_counter ||
 			next_vector !== expected_next_vector ||
 			validate_vector !== expected_validate_vector) begin
 			$error("FAIL: %0s | fetch=%0b expected_fetch=%0b hidden=%0b expected_hidden=%0b output=%0b expected_output=%0b loss=%0b expected_loss=%0b counter=%0d expected_counter=%0d next=%032h expected_next=%032h validate=%032h expected_validate=%032h",
-				test_name, fetch, expected_fetch, enable, expected_hidden_enable,
-				output_enable, expected_output_enable, loss_enable, expected_loss_enable,
+				test_name, fetch, expected_fetch, hidden_layer_enable, expected_hidden_enable,
+				output_layer_enable, expected_output_enable, loss_layer_enable, expected_loss_enable,
 				counter, expected_counter, next_vector, expected_next_vector,
 				validate_vector, expected_validate_vector);
 			$finish;
@@ -175,7 +175,7 @@ module pipeline_manager_tb;
 
 	task run_to_epoch_start;
 	begin
-		while (counter !== 7'd0 || enable !== 1'b1) begin
+		while (counter !== 7'd0 || hidden_layer_enable !== 1'b1) begin
 			@(posedge clk);
 			#2;
 		end
