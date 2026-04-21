@@ -22,6 +22,7 @@ module anids_core (
 	parameter OUTPUT_COUNT         = 128;
 	parameter HIDDEN_RESULT_WIDTH  = `HL_RESULT_WIDTH;
 	parameter OUTPUT_RESULT_WIDTH  = `OL_RESULT_WIDTH;
+	parameter LOOKUP_RESULT_WIDTH  = `LUT_DATA_WIDTH;
 	parameter LOSS_RESULT_WIDTH    = `LF_OUT_WIDTH;
 	parameter LUT_ADDR_WIDTH       = `LUT_ADDR_WIDTH;
 	parameter LUT_DATA_WIDTH       = `LUT_DATA_WIDTH;
@@ -61,6 +62,7 @@ module anids_core (
 	// ----------------------------------------------------------------------
 	wire                               hidden_layer_enable;
 	wire                               output_layer_enable;
+	wire                               lookup_layer_enable;
 	wire                               loss_layer_enable;
 	wire [FEATURE_WIDTH-1:0]           next_vector;
 	wire [FEATURE_WIDTH-1:0]           validate_vector;
@@ -76,6 +78,7 @@ module anids_core (
 		.fetch               (fetch_next_vector),
 		.hidden_layer_enable (hidden_layer_enable),
 		.output_layer_enable (output_layer_enable),
+		.lookup_layer_enable (lookup_layer_enable),
 		.loss_layer_enable   (loss_layer_enable),
 		.next_vector         (next_vector),
 		.validate_vector     (validate_vector),
@@ -143,28 +146,45 @@ module anids_core (
 	);
 
 	// ----------------------------------------------------------------------
-	//                  		Loss Function + Outlier Detection
+	//                  		Lookup + Loss + Outlier Detection
 	// ----------------------------------------------------------------------
+	wire signed [LOOKUP_RESULT_WIDTH-1:0] lookup_function_0;
+	wire signed [LOOKUP_RESULT_WIDTH-1:0] lookup_function_1;
+	wire                                  lookup_ready;
 	wire signed [LOSS_RESULT_WIDTH-1:0] loss_result_int;
 	wire                                loss_ready;
-	wire signed [OUTPUT_RESULT_WIDTH-1:0] loss_result_0 = output_results[counter * 2];
-	wire signed [OUTPUT_RESULT_WIDTH-1:0] loss_result_1 = output_results[(counter * 2) + 1'b1];
+	wire signed [OUTPUT_RESULT_WIDTH-1:0] lookup_result_0 = output_results[counter * 2];
+	wire signed [OUTPUT_RESULT_WIDTH-1:0] lookup_result_1 = output_results[(counter * 2) + 1'b1];
 	wire                                outlier_ready;
 
+	lookup_layer lookup_layer_inst (
+		.clk           (clk),
+		.resetN        (resetN),
+		.lookup_enable (lookup_layer_enable),
+		.loss_enable   (loss_layer_enable),
+		.N             (vector_length),
+		.counter       (counter),
+		.lut_wr_addr   (lut_wr_addr),
+		.lut_wr_data   (lut_wr_data),
+		.lut_wr_en     (lut_wr_en),
+		.result_0      (lookup_result_0),
+		.result_1      (lookup_result_1),
+		.function_0    (lookup_function_0),
+		.function_1    (lookup_function_1),
+		.lookup_ready  (lookup_ready)
+	);
+
 	loss_function loss_function_inst (
-		.clk         (clk),
-		.resetN      (resetN),
-		.enable      (loss_layer_enable),
-		.N           (vector_length),
-		.counter     (counter),
-		.lut_wr_addr (lut_wr_addr),
-		.lut_wr_data (lut_wr_data),
-		.lut_wr_en   (lut_wr_en),
-		.x_in        (validate_features),
-		.result_0    (loss_result_0),
-		.result_1    (loss_result_1),
-		.result      (loss_result_int),
-		.ready       (loss_ready)
+		.clk        (clk),
+		.resetN     (resetN),
+		.enable     (loss_layer_enable),
+		.N          (vector_length),
+		.counter    (counter),
+		.x_in       (validate_features),
+		.function_0 (lookup_function_0),
+		.function_1 (lookup_function_1),
+		.result     (loss_result_int),
+		.ready      (loss_ready)
 	);
 
 	outlier_detector outlier_detector_inst (

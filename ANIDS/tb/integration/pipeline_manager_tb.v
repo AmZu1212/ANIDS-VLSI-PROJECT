@@ -16,6 +16,7 @@ module pipeline_manager_tb;
 	wire                        fetch;
 	wire                        hidden_layer_enable;
 	wire                        output_layer_enable;
+	wire                        lookup_layer_enable;
 	wire                        loss_layer_enable;
 	wire                        mfu_ready;
 	wire [VECTOR_WIDTH-1:0]     mfu_features;
@@ -37,6 +38,7 @@ module pipeline_manager_tb;
 		.fetch               (fetch),
 		.hidden_layer_enable (hidden_layer_enable),
 		.output_layer_enable (output_layer_enable),
+		.lookup_layer_enable (lookup_layer_enable),
 		.loss_layer_enable   (loss_layer_enable),
 		.next_vector         (next_vector),
 		.validate_vector     (validate_vector),
@@ -71,7 +73,7 @@ module pipeline_manager_tb;
 		mem_data = {VECTOR_WIDTH{1'b0}};
 		#2;
 
-		check_outputs(1'b0, 1'b0, 1'b0, 1'b0, 7'd0,
+		check_outputs(1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 7'd0,
 			128'h00000000000000000000000000000000,
 			128'h00000000000000000000000000000000,
 			"reset clears outputs");
@@ -79,7 +81,7 @@ module pipeline_manager_tb;
 		resetN <= 1'b1;
 		@(posedge clk);
 		#2;
-		check_outputs(fetch, 1'b0, 1'b0, 1'b0, 7'd0,
+		check_outputs(fetch, 1'b0, 1'b0, 1'b0, 1'b0, 7'd0,
 			128'h00000000000000000000000000000000,
 			128'h00000000000000000000000000000000,
 			"idle before start");
@@ -90,36 +92,43 @@ module pipeline_manager_tb;
 		wait (hidden_layer_enable === 1'b1);
 		@(posedge clk);
 		#2;
-		check_outputs(fetch, 1'b1, 1'b0, 1'b0, counter,
+		check_outputs(fetch, 1'b1, 1'b0, 1'b0, 1'b0, counter,
 			128'h11112222333344445555666677778888,
 			128'h00000000000000000000000000000000,
 			"first epoch starts with hidden stage only");
 
 		send_vector(128'h9999AAAABBBBCCCCDDDDEEEEFFFF0000);
 		run_to_epoch_start;
-		check_outputs(fetch, 1'b1, 1'b1, 1'b0, 7'd0,
+		check_outputs(fetch, 1'b1, 1'b1, 1'b0, 1'b0, 7'd0,
 			128'h9999AAAABBBBCCCCDDDDEEEEFFFF0000,
 			128'h00000000000000000000000000000000,
 			"second epoch enables output stage");
 
 		send_vector(128'h0123456789ABCDEFFEDCBA9876543210);
 		run_to_epoch_start;
-		check_outputs(fetch, 1'b1, 1'b1, 1'b1, 7'd0,
+		check_outputs(fetch, 1'b1, 1'b1, 1'b1, 1'b0, 7'd0,
 			128'h0123456789ABCDEFFEDCBA9876543210,
-			128'h11112222333344445555666677778888,
-			"third epoch enables loss stage and aligns validate vector");
+			128'h00000000000000000000000000000000,
+			"third epoch enables lookup stage");
 
 		send_vector(128'h13579BDF2468ACE013579BDF2468ACE0);
 		run_to_epoch_start;
-		check_outputs(fetch, 1'b1, 1'b1, 1'b1, 7'd0,
+		check_outputs(fetch, 1'b1, 1'b1, 1'b1, 1'b1, 7'd0,
 			128'h13579BDF2468ACE013579BDF2468ACE0,
+			128'h11112222333344445555666677778888,
+			"fourth epoch enables loss stage and aligns validate vector");
+
+		send_vector(128'hCAFEBABE0123456789ABCDEFF0F0F0F0);
+		run_to_epoch_start;
+		check_outputs(fetch, 1'b1, 1'b1, 1'b1, 1'b1, 7'd0,
+			128'hCAFEBABE0123456789ABCDEFF0F0F0F0,
 			128'h9999AAAABBBBCCCCDDDDEEEEFFFF0000,
-			"steady-state pipeline keeps all stages enabled");
+			"steady-state pipeline keeps all four stages enabled");
 
 		start <= 1'b0;
 		@(posedge clk);
 		#2;
-		check_outputs(1'b0, 1'b0, 1'b0, 1'b0, 7'd0,
+		check_outputs(1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 7'd0,
 			128'h00000000000000000000000000000000,
 			128'h00000000000000000000000000000000,
 			"start low returns module to idle");
@@ -132,6 +141,7 @@ module pipeline_manager_tb;
 		input                      expected_fetch,
 		input                      expected_hidden_enable,
 		input                      expected_output_enable,
+		input                      expected_lookup_enable,
 		input                      expected_loss_enable,
 		input [COUNTER_WIDTH-1:0]  expected_counter,
 		input [VECTOR_WIDTH-1:0]   expected_next_vector,
@@ -142,13 +152,15 @@ module pipeline_manager_tb;
 		if (fetch !== expected_fetch ||
 			hidden_layer_enable !== expected_hidden_enable ||
 			output_layer_enable !== expected_output_enable ||
+			lookup_layer_enable !== expected_lookup_enable ||
 			loss_layer_enable !== expected_loss_enable ||
 			counter !== expected_counter ||
 			next_vector !== expected_next_vector ||
 			validate_vector !== expected_validate_vector) begin
-			$error("FAIL: %0s | fetch=%0b expected_fetch=%0b hidden=%0b expected_hidden=%0b output=%0b expected_output=%0b loss=%0b expected_loss=%0b counter=%0d expected_counter=%0d next=%032h expected_next=%032h validate=%032h expected_validate=%032h",
+			$error("FAIL: %0s | fetch=%0b expected_fetch=%0b hidden=%0b expected_hidden=%0b output=%0b expected_output=%0b lookup=%0b expected_lookup=%0b loss=%0b expected_loss=%0b counter=%0d expected_counter=%0d next=%032h expected_next=%032h validate=%032h expected_validate=%032h",
 				test_name, fetch, expected_fetch, hidden_layer_enable, expected_hidden_enable,
-				output_layer_enable, expected_output_enable, loss_layer_enable, expected_loss_enable,
+				output_layer_enable, expected_output_enable, lookup_layer_enable, expected_lookup_enable,
+				loss_layer_enable, expected_loss_enable,
 				counter, expected_counter, next_vector, expected_next_vector,
 				validate_vector, expected_validate_vector);
 			$finish;

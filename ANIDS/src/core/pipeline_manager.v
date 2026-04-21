@@ -11,6 +11,7 @@ module pipeline_manager (
 		fetch,
 		hidden_layer_enable,
 		output_layer_enable,
+		lookup_layer_enable,
 		loss_layer_enable,
 		next_vector,
 		validate_vector,
@@ -36,6 +37,7 @@ module pipeline_manager (
 	output reg                          fetch;
 	output reg                          hidden_layer_enable;
 	output reg                          output_layer_enable;
+	output reg                          lookup_layer_enable;
 	output reg                          loss_layer_enable;
 	output wire [VECTOR_WIDTH-1:0]      next_vector;
 	output wire [VECTOR_WIDTH-1:0]      validate_vector;
@@ -47,6 +49,7 @@ module pipeline_manager (
 	// Per-stage vector context.
 	reg [VECTOR_WIDTH-1:0] hidden_layer_vector;
 	reg [VECTOR_WIDTH-1:0] output_layer_vector;
+	reg [VECTOR_WIDTH-1:0] lookup_layer_vector;
 	reg [VECTOR_WIDTH-1:0] loss_layer_vector;
 	// Pipeline fill level.
 	reg [EPOCH_WIDTH-1:0]  epoch_count;
@@ -65,7 +68,7 @@ module pipeline_manager (
 	// One outstanding fetch at a time.
 	reg                    fetch_inflight;
 
-	wire stage_active      = hidden_layer_enable || output_layer_enable || loss_layer_enable;
+	wire stage_active      = hidden_layer_enable || output_layer_enable || lookup_layer_enable || loss_layer_enable;
 	wire [COUNTER_WIDTH-1:0] last_pair_index = ((N >> 1) - 1'b1);
 	// Start a new 64-cycle epoch when data is ready.
 	wire start_epoch       = !stage_active && (fifo_count != 0);
@@ -84,9 +87,11 @@ module pipeline_manager (
 			counter        <= #1 {COUNTER_WIDTH{1'b0}};
 			hidden_layer_vector <= #1 {VECTOR_WIDTH{1'b0}};
 			output_layer_vector <= #1 {VECTOR_WIDTH{1'b0}};
+			lookup_layer_vector <= #1 {VECTOR_WIDTH{1'b0}};
 			loss_layer_vector   <= #1 {VECTOR_WIDTH{1'b0}};
 			hidden_layer_enable <= #1 1'b0;
 			output_layer_enable <= #1 1'b0;
+			lookup_layer_enable <= #1 1'b0;
 			loss_layer_enable   <= #1 1'b0;
 			epoch_count    <= #1 {EPOCH_WIDTH{1'b0}};
 			fifo_wr_ptr    <= #1 {FIFO_PTR_W{1'b0}};
@@ -99,9 +104,11 @@ module pipeline_manager (
 			counter        <= #1 {COUNTER_WIDTH{1'b0}};
 			hidden_layer_vector <= #1 {VECTOR_WIDTH{1'b0}};
 			output_layer_vector <= #1 {VECTOR_WIDTH{1'b0}};
+			lookup_layer_vector <= #1 {VECTOR_WIDTH{1'b0}};
 			loss_layer_vector   <= #1 {VECTOR_WIDTH{1'b0}};
 			hidden_layer_enable <= #1 1'b0;
 			output_layer_enable <= #1 1'b0;
+			lookup_layer_enable <= #1 1'b0;
 			loss_layer_enable   <= #1 1'b0;
 			epoch_count    <= #1 {EPOCH_WIDTH{1'b0}};
 			fifo_wr_ptr    <= #1 {FIFO_PTR_W{1'b0}};
@@ -123,9 +130,11 @@ module pipeline_manager (
 				// First fill step: hidden only.
 				hidden_layer_vector <= #1 fifo_mem[fifo_rd_ptr];
 				output_layer_vector <= #1 {VECTOR_WIDTH{1'b0}};
+				lookup_layer_vector <= #1 {VECTOR_WIDTH{1'b0}};
 				loss_layer_vector   <= #1 {VECTOR_WIDTH{1'b0}};
 				hidden_layer_enable <= #1 1'b1;
 				output_layer_enable <= #1 1'b0;
+				lookup_layer_enable <= #1 1'b0;
 				loss_layer_enable   <= #1 1'b0;
 				counter       <= #1 {COUNTER_WIDTH{1'b0}};
 				epoch_count   <= #1 {{(EPOCH_WIDTH-1){1'b0}}, 1'b1};
@@ -133,10 +142,12 @@ module pipeline_manager (
 			else if (boundary_shift) begin
 				// Shift stage contexts at the epoch boundary.
 				// If no new vector is ready, the pipeline drains.
-				loss_layer_vector   <= #1 output_layer_vector;
+				loss_layer_vector   <= #1 lookup_layer_vector;
+				lookup_layer_vector <= #1 output_layer_vector;
 				output_layer_vector <= #1 hidden_layer_vector;
 				hidden_layer_vector <= #1 (inject_next_stage ? fifo_mem[fifo_rd_ptr] : {VECTOR_WIDTH{1'b0}});
-				loss_layer_enable   <= #1 ((epoch_count >= 2) ? output_layer_enable : 1'b0);
+				loss_layer_enable   <= #1 ((epoch_count >= 3) ? lookup_layer_enable : 1'b0);
+				lookup_layer_enable <= #1 ((epoch_count >= 2) ? output_layer_enable : 1'b0);
 				output_layer_enable <= #1 ((epoch_count >= 1) ? hidden_layer_enable : 1'b0);
 				hidden_layer_enable <= #1 inject_next_stage;
 				counter       <= #1 {COUNTER_WIDTH{1'b0}};

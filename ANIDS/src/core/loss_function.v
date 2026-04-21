@@ -7,12 +7,9 @@ module loss_function (
 		enable,
 		N,
 		counter,
-		lut_wr_addr,
-		lut_wr_data,
-		lut_wr_en,
 		x_in,
-		result_0,
-		result_1,
+		function_0,
+		function_1,
 		result,
 		ready
 	);
@@ -24,8 +21,6 @@ module loss_function (
 	parameter ABS_WIDTH          = `LF_ABS_WIDTH;
 	parameter PAIR_SUM_WIDTH     = `LF_PAIR_SUM_WIDTH;
 	parameter ACC_WIDTH          = `LF_ACC_WIDTH;
-	parameter LUT_ADDR_WIDTH     = `LUT_ADDR_WIDTH;
-	parameter LUT_DATA_WIDTH     = `LUT_DATA_WIDTH;
 
 	// ----------------------------------------------------------------------
 	//                  		I/O Ports
@@ -35,12 +30,9 @@ module loss_function (
 	input  wire                                enable;
 	input  wire [`APB_DATA_WIDTH-1:0]          N;
 	input  wire [COUNTER_WIDTH-1:0]            counter;
-	input  wire [LUT_ADDR_WIDTH-1:0]           lut_wr_addr;
-	input  wire [LUT_DATA_WIDTH-1:0]           lut_wr_data;
-	input  wire                                lut_wr_en;
 	input  wire [FEATURE_PAIR_WIDTH-1:0]       x_in;
-	input  wire signed [RESULT_IN_WIDTH-1:0]   result_0;
-	input  wire signed [RESULT_IN_WIDTH-1:0]   result_1;
+	input  wire signed [RESULT_IN_WIDTH-1:0]   function_0;
+	input  wire signed [RESULT_IN_WIDTH-1:0]   function_1;
 	output reg  signed [RESULT_WIDTH-1:0]      result;
 	output reg                                 ready;
 
@@ -48,52 +40,16 @@ module loss_function (
 	//                  		Datapath
 	// ----------------------------------------------------------------------
 	reg signed [ACC_WIDTH-1:0] acc;
-	wire [LUT_ADDR_WIDTH-1:0] lut_rd_addr_0;
-	wire [LUT_ADDR_WIDTH-1:0] lut_rd_addr_1;
-	wire signed [LUT_DATA_WIDTH-1:0] function_0;
-	wire signed [LUT_DATA_WIDTH-1:0] function_1;
-
-	// Map signed outputs into *ascending* LUT address space, then apply the
-	// configured function table before computing the loss delta.
-	memory_mapper mapper_0 (
-		.in_value (result_0),
-		.lut_addr (lut_rd_addr_0)
-	);
-
-	memory_mapper mapper_1 (
-		.in_value (result_1),
-		.lut_addr (lut_rd_addr_1)
-	);
-
-	lut_mem function_lut_0 (
-		.clk     (clk),
-		.resetN  (resetN),
-		.rd_addr (lut_rd_addr_0),
-		.wr_addr (lut_wr_addr),
-		.wr_en   (lut_wr_en),
-		.wr_data (lut_wr_data),
-		.rd_data (function_0)
-	);
-
-	lut_mem function_lut_1 (
-		.clk     (clk),
-		.resetN  (resetN),
-		.rd_addr (lut_rd_addr_1),
-		.wr_addr (lut_wr_addr),
-		.wr_en   (lut_wr_en),
-		.wr_data (lut_wr_data),
-		.rd_data (function_1)
-	);
 
 	// Last valid pair-step for the current vector length.
 	wire [COUNTER_WIDTH-1:0] last_pair_index =
 		((N >> 1) - 1'b1);
 
-	// Extend original feature bits into the same numeric space as the function-LUT outputs.
+	// Extend original feature bits into the same numeric space as the looked-up values.
 	wire signed [RESULT_IN_WIDTH:0] x0_ext = x_in[0] ? 9'sd1 : 9'sd0;
 	wire signed [RESULT_IN_WIDTH:0] x1_ext = x_in[1] ? 9'sd1 : 9'sd0;
-	wire signed [RESULT_IN_WIDTH:0] r0_ext = {function_0[LUT_DATA_WIDTH-1], function_0};
-	wire signed [RESULT_IN_WIDTH:0] r1_ext = {function_1[LUT_DATA_WIDTH-1], function_1};
+	wire signed [RESULT_IN_WIDTH:0] r0_ext = {function_0[RESULT_IN_WIDTH-1], function_0};
+	wire signed [RESULT_IN_WIDTH:0] r1_ext = {function_1[RESULT_IN_WIDTH-1], function_1};
 
 	// Per-feature reconstruction error before magnitude.
 	wire signed [RESULT_IN_WIDTH:0] delta_0 = x0_ext - r0_ext;
