@@ -3,13 +3,13 @@ module DW_ram_rw_s_dff #(
 	parameter integer depth      = 8,
 	parameter integer rst_mode   = 0
 ) (
-	clk,
-	rst_n,
-	cs_n,
-	wr_n,
-	rw_addr,
-	data_in,
-	data_out
+	clk,	// CE
+	rst_n,	// ????
+	cs_n,	// CSB
+	wr_n,	// WEB
+	rw_addr,// A
+	data_in,// I
+	data_out// O
 );
 
 	localparam integer ADDR_WIDTH = (depth <= 2) ? 1 : $clog2(depth);
