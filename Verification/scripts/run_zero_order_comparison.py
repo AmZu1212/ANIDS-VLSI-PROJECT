@@ -23,13 +23,13 @@ class CompareCase:
 CASES = [
     CompareCase(
         name="zero_case",
-        vector_file=REPO_ROOT / "verification" / "zero_order" / "data" / "dma_all_zeros.data",
+        vector_file=REPO_ROOT / "Verification" / "zero_order" / "data" / "dma_all_zeros.data",
         threshold=1,
         lut_zero_value=0x00,
     ),
     CompareCase(
         name="ones_case",
-        vector_file=REPO_ROOT / "verification" / "zero_order" / "data" / "dma_all_ones.data",
+        vector_file=REPO_ROOT / "Verification" / "zero_order" / "data" / "dma_all_ones.data",
         threshold=0,
         lut_zero_value=0xFF,
     ),
@@ -50,7 +50,7 @@ def reference_for_case(case: CompareCase) -> tuple[int, int]:
 
 
 def run_rtl_compare_tb() -> dict[str, tuple[int, int, int]]:
-    cmd = [sys.executable, "run.py", "verification/zero_order/zero_order_loss_compare_tb.sv"]
+    cmd = [sys.executable, "run.py", "Verification/zero_order/zero_order_loss_compare_tb.sv"]
     proc = subprocess.run(
         cmd,
         cwd=REPO_ROOT,

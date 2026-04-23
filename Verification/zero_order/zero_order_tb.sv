@@ -74,7 +74,7 @@ module zero_order_tb;
 		init_signals;
 
 		run_zero_order_case(
-			"verification/zero_order/data/dma_all_zeros.data",
+			"Verification/zero_order/data/dma_all_zeros.data",
 			8'd1,
 			8'h00,
 			1'b0,
@@ -82,7 +82,7 @@ module zero_order_tb;
 		);
 
 		run_zero_order_case(
-			"verification/zero_order/data/dma_all_ones.data",
+			"Verification/zero_order/data/dma_all_ones.data",
 			8'd0,
 			8'hFF,
 			1'b1,
@@ -90,14 +90,14 @@ module zero_order_tb;
 		);
 
 		run_first_result_timing_analysis(
-			"verification/zero_order/data/dma_all_zeros.data",
+			"Verification/zero_order/data/dma_all_zeros.data",
 			8'd1,
 			8'h00,
 			"first-result timing analysis"
 		);
 
 		run_steady_state_gap_case(
-			"verification/zero_order/data/dma_all_zeros.data",
+			"Verification/zero_order/data/dma_all_zeros.data",
 			8'd1,
 			8'h00,
 			"steady-state result spacing"

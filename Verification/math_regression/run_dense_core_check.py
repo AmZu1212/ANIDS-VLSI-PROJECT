@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from verification.math_regression.dense_core_case import generate_dense_core_case
+from Verification.math_regression.dense_core_case import generate_dense_core_case
 
 
 RTL_RE = re.compile(r"RTL_DENSE_CORE loss=(?P<loss>-?\d+) outlier=(?P<outlier>[01])")
@@ -18,7 +18,7 @@ RTL_RE = re.compile(r"RTL_DENSE_CORE loss=(?P<loss>-?\d+) outlier=(?P<outlier>[0
 def main() -> int:
     _, _, expected_path, expected = generate_dense_core_case()
     proc = subprocess.run(
-        [sys.executable, "run.py", "verification/math_regression/tb/dense_core_stress_tb.sv"],
+        [sys.executable, "run.py", "Verification/math_regression/tb/dense_core_stress_tb.sv"],
         cwd=ROOT,
         capture_output=True,
         text=True,

@@ -4,7 +4,7 @@ import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from verification.scripts.anids_reference_model import (
+from Verification.scripts.anids_reference_model import (
     DMA_VECTOR_WIDTH,
     HIDDEN_NEURON_COUNT,
     OUTPUT_NEURON_COUNT,

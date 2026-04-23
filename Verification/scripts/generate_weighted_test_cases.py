@@ -17,7 +17,7 @@ from anids_reference_model import (
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-GENERATED_DIR = REPO_ROOT / "verification" / "zero_order" / "generated"
+GENERATED_DIR = REPO_ROOT / "Verification" / "zero_order" / "generated"
 
 START_REG = 0
 N_REG = 1

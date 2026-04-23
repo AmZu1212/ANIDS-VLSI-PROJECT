@@ -3,7 +3,7 @@
 
 module loss_stage_regression_tb;
 	localparam integer CASE_COUNT = 30;
-	localparam string GENERATED_DIR = "verification/math_regression/generated/loss";
+	localparam string GENERATED_DIR = "Verification/math_regression/generated/loss";
 
 	reg                                clk;
 	reg                                resetN;

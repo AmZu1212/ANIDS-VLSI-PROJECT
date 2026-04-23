@@ -3,7 +3,7 @@
 
 module core_stage_regression_tb;
 	localparam integer CASE_COUNT = 10;
-	localparam string GENERATED_DIR = "verification/math_regression/generated/core";
+	localparam string GENERATED_DIR = "Verification/math_regression/generated/core";
 
 	reg                           sys_clk;
 	reg                           sys_reset_n;

@@ -35,7 +35,7 @@ MATH_REGRESSION_PASSED
 Run command:
 
 ```bash
-python verification/math_regression/run_regression.py
+python Verification/math_regression/run_regression.py
 ```
 
 ---
@@ -59,8 +59,8 @@ This section explains what each regression group actually does.
 
 Files:
 
-- [verification/math_regression/regression_cases.py](/e:/Git-Repos/ANIDS-VLSI-PROJECT/verification/math_regression/regression_cases.py)
-- [verification/math_regression/tb/hidden_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/verification/math_regression/tb/hidden_stage_regression_tb.sv)
+- [Verification/math_regression/regression_cases.py](/e:/Git-Repos/ANIDS-VLSI-PROJECT/Verification/math_regression/regression_cases.py)
+- [Verification/math_regression/tb/hidden_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/Verification/math_regression/tb/hidden_stage_regression_tb.sv)
 
 Case count:
 
@@ -106,8 +106,8 @@ What this proves:
 
 Files:
 
-- [verification/math_regression/regression_cases.py](/e:/Git-Repos/ANIDS-VLSI-PROJECT/verification/math_regression/regression_cases.py)
-- [verification/math_regression/tb/output_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/verification/math_regression/tb/output_stage_regression_tb.sv)
+- [Verification/math_regression/regression_cases.py](/e:/Git-Repos/ANIDS-VLSI-PROJECT/Verification/math_regression/regression_cases.py)
+- [Verification/math_regression/tb/output_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/Verification/math_regression/tb/output_stage_regression_tb.sv)
 
 Case count:
 
@@ -152,8 +152,8 @@ What this proves:
 
 Files:
 
-- [verification/math_regression/regression_cases.py](/e:/Git-Repos/ANIDS-VLSI-PROJECT/verification/math_regression/regression_cases.py)
-- [verification/math_regression/tb/loss_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/verification/math_regression/tb/loss_stage_regression_tb.sv)
+- [Verification/math_regression/regression_cases.py](/e:/Git-Repos/ANIDS-VLSI-PROJECT/Verification/math_regression/regression_cases.py)
+- [Verification/math_regression/tb/loss_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/Verification/math_regression/tb/loss_stage_regression_tb.sv)
 
 Case count:
 
@@ -200,8 +200,8 @@ What this proves:
 
 Files:
 
-- [verification/math_regression/regression_cases.py](/e:/Git-Repos/ANIDS-VLSI-PROJECT/verification/math_regression/regression_cases.py)
-- [verification/math_regression/tb/core_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/verification/math_regression/tb/core_stage_regression_tb.sv)
+- [Verification/math_regression/regression_cases.py](/e:/Git-Repos/ANIDS-VLSI-PROJECT/Verification/math_regression/regression_cases.py)
+- [Verification/math_regression/tb/core_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/Verification/math_regression/tb/core_stage_regression_tb.sv)
 
 Case count:
 
@@ -319,12 +319,12 @@ Important note:
 
 | Path | Purpose |
 |---|---|
-| [verification/math_regression/regression_cases.py](/e:/Git-Repos/ANIDS-VLSI-PROJECT/verification/math_regression/regression_cases.py) | deterministic randomized case generation |
-| [verification/math_regression/run_regression.py](/e:/Git-Repos/ANIDS-VLSI-PROJECT/verification/math_regression/run_regression.py) | top-level regression runner |
-| [verification/math_regression/tb/hidden_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/verification/math_regression/tb/hidden_stage_regression_tb.sv) | hidden-stage RTL checker |
-| [verification/math_regression/tb/output_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/verification/math_regression/tb/output_stage_regression_tb.sv) | output-stage RTL checker |
-| [verification/math_regression/tb/loss_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/verification/math_regression/tb/loss_stage_regression_tb.sv) | loss-stage RTL checker |
-| [verification/math_regression/tb/core_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/verification/math_regression/tb/core_stage_regression_tb.sv) | end-to-end core RTL checker |
+| [Verification/math_regression/regression_cases.py](/e:/Git-Repos/ANIDS-VLSI-PROJECT/Verification/math_regression/regression_cases.py) | deterministic randomized case generation |
+| [Verification/math_regression/run_regression.py](/e:/Git-Repos/ANIDS-VLSI-PROJECT/Verification/math_regression/run_regression.py) | top-level regression runner |
+| [Verification/math_regression/tb/hidden_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/Verification/math_regression/tb/hidden_stage_regression_tb.sv) | hidden-stage RTL checker |
+| [Verification/math_regression/tb/output_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/Verification/math_regression/tb/output_stage_regression_tb.sv) | output-stage RTL checker |
+| [Verification/math_regression/tb/loss_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/Verification/math_regression/tb/loss_stage_regression_tb.sv) | loss-stage RTL checker |
+| [Verification/math_regression/tb/core_stage_regression_tb.sv](/e:/Git-Repos/ANIDS-VLSI-PROJECT/Verification/math_regression/tb/core_stage_regression_tb.sv) | end-to-end core RTL checker |
 
 ---
 

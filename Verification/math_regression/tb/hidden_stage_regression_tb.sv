@@ -3,7 +3,7 @@
 
 module hidden_stage_regression_tb;
 	localparam integer CASE_COUNT = 30;
-	localparam string GENERATED_DIR = "verification/math_regression/generated/hidden";
+	localparam string GENERATED_DIR = "Verification/math_regression/generated/hidden";
 
 	reg                                  clk;
 	reg                                  resetN;

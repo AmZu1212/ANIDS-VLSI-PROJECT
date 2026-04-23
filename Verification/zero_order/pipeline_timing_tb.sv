@@ -124,7 +124,7 @@ module pipeline_timing_tb;
 				cpu_write_APB(`START_REG, 8'd1);
 			end
 			begin
-				dma_send_vector_file("verification/zero_order/data/dma_all_zeros.data");
+				dma_send_vector_file("Verification/zero_order/data/dma_all_zeros.data");
 			end
 		join
 

@@ -3,7 +3,7 @@
 
 module output_stage_regression_tb;
 	localparam integer CASE_COUNT = 30;
-	localparam string GENERATED_DIR = "verification/math_regression/generated/output";
+	localparam string GENERATED_DIR = "Verification/math_regression/generated/output";
 
 	reg                                  clk;
 	reg                                  resetN;

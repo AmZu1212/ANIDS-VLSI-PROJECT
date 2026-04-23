@@ -44,14 +44,14 @@ module zero_order_loss_compare_tb;
 
 		run_case(
 			"zero_case",
-			"verification/zero_order/data/dma_all_zeros.data",
+			"Verification/zero_order/data/dma_all_zeros.data",
 			8'd1,
 			8'h00
 		);
 
 		run_case(
 			"ones_case",
-			"verification/zero_order/data/dma_all_ones.data",
+			"Verification/zero_order/data/dma_all_ones.data",
 			8'd0,
 			8'hFF
 		);

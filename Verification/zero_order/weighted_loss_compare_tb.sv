@@ -42,14 +42,14 @@ module weighted_loss_compare_tb;
 
 		run_case(
 			"dense_weighted_case",
-			"verification/zero_order/generated/dense_weighted_case.prog",
-			"verification/zero_order/generated/dense_weighted_case.data"
+			"Verification/zero_order/generated/dense_weighted_case.prog",
+			"Verification/zero_order/generated/dense_weighted_case.data"
 		);
 
 		run_case(
 			"sparse_weighted_case",
-			"verification/zero_order/generated/sparse_weighted_case.prog",
-			"verification/zero_order/generated/sparse_weighted_case.data"
+			"Verification/zero_order/generated/sparse_weighted_case.prog",
+			"Verification/zero_order/generated/sparse_weighted_case.data"
 		);
 
 		$display("RTL_WEIGHTED_COMPARE_DONE");

@@ -2,8 +2,8 @@
 `include "anids_defines.vh"
 
 module dense_core_stress_tb;
-	localparam string PROG_FILE = "verification/math_regression/generated/dense_core/dense_core_full.prog";
-	localparam string VECTOR_FILE = "verification/math_regression/generated/dense_core/dense_core_full.vector";
+	localparam string PROG_FILE = "Verification/math_regression/generated/dense_core/dense_core_full.prog";
+	localparam string VECTOR_FILE = "Verification/math_regression/generated/dense_core/dense_core_full.vector";
 
 	reg                        sys_clk;
 	reg                        sys_reset_n;

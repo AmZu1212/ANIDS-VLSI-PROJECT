@@ -8,14 +8,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from verification.scripts.anids_reference_model import (
+from Verification.scripts.anids_reference_model import (
     run_anids_model_detailed,
     run_hidden_stage,
     run_output_stage,
     loss_result_direct,
     to_signed,
 )
-from verification.math_regression.regression_cases import generate_all_cases
+from Verification.math_regression.regression_cases import generate_all_cases
 
 
 HIDDEN_RE = re.compile(r"RTL_HIDDEN case=(?P<case>\S+) data=(?P<data>[0-9a-fA-F]+)")
@@ -46,10 +46,10 @@ def _decode_hex_bytes(hex_string: str) -> list[int]:
 def main() -> int:
     hidden_cases, output_cases, loss_cases, core_cases = generate_all_cases()
 
-    hidden_out = _run_tb("verification/math_regression/tb/hidden_stage_regression_tb.sv")
-    output_out = _run_tb("verification/math_regression/tb/output_stage_regression_tb.sv")
-    loss_out = _run_tb("verification/math_regression/tb/loss_stage_regression_tb.sv")
-    core_out = _run_tb("verification/math_regression/tb/core_stage_regression_tb.sv")
+    hidden_out = _run_tb("Verification/math_regression/tb/hidden_stage_regression_tb.sv")
+    output_out = _run_tb("Verification/math_regression/tb/output_stage_regression_tb.sv")
+    loss_out = _run_tb("Verification/math_regression/tb/loss_stage_regression_tb.sv")
+    core_out = _run_tb("Verification/math_regression/tb/core_stage_regression_tb.sv")
 
     hidden_results = {m.group("case"): _decode_hex_bytes(m.group("data")) for m in HIDDEN_RE.finditer(hidden_out)}
     output_results = {m.group("case"): _decode_hex_bytes(m.group("data")) for m in OUTPUT_RE.finditer(output_out)}

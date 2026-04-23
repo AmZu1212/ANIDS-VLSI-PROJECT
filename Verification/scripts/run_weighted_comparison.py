@@ -12,7 +12,7 @@ RTL_PATTERN = re.compile(r"RTL_WEIGHTED_COMPARE case=(?P<case>\S+) loss=(?P<loss
 
 
 def run_rtl_compare_tb() -> dict[str, tuple[int, int]]:
-    cmd = [sys.executable, "run.py", "verification/zero_order/weighted_loss_compare_tb.sv"]
+    cmd = [sys.executable, "run.py", "Verification/zero_order/weighted_loss_compare_tb.sv"]
     proc = subprocess.run(
         cmd,
         cwd=REPO_ROOT,
