@@ -74,7 +74,7 @@ module zero_order_tb;
 		init_signals;
 
 		run_zero_order_case(
-			"zero_order_test/data/dma_all_zeros.data",
+			"verification/zero_order/data/dma_all_zeros.data",
 			8'd1,
 			8'h00,
 			1'b0,
@@ -82,7 +82,7 @@ module zero_order_tb;
 		);
 
 		run_zero_order_case(
-			"zero_order_test/data/dma_all_ones.data",
+			"verification/zero_order/data/dma_all_ones.data",
 			8'd0,
 			8'hFF,
 			1'b1,
@@ -90,14 +90,14 @@ module zero_order_tb;
 		);
 
 		run_first_result_timing_analysis(
-			"zero_order_test/data/dma_all_zeros.data",
+			"verification/zero_order/data/dma_all_zeros.data",
 			8'd1,
 			8'h00,
 			"first-result timing analysis"
 		);
 
 		run_steady_state_gap_case(
-			"zero_order_test/data/dma_all_zeros.data",
+			"verification/zero_order/data/dma_all_zeros.data",
 			8'd1,
 			8'h00,
 			"steady-state result spacing"
@@ -135,6 +135,7 @@ module zero_order_tb;
 		integer mfu_cycle;
 		integer hidden_cycle;
 		integer output_cycle;
+		integer lookup_cycle;
 		integer loss_cycle;
 		integer loss_ready_cycle;
 		integer done_cycle;
@@ -148,6 +149,7 @@ module zero_order_tb;
 		mfu_cycle        = -1;
 		hidden_cycle     = -1;
 		output_cycle     = -1;
+		lookup_cycle     = -1;
 		loss_cycle       = -1;
 		loss_ready_cycle = -1;
 		done_cycle       = -1;
@@ -166,15 +168,19 @@ module zero_order_tb;
 				mfu_cycle = cycle_count;
 			end
 			begin
-				@(posedge dut.core_inst.hidden_enable);
+				@(posedge dut.core_inst.hidden_layer_enable);
 				hidden_cycle = cycle_count;
 			end
 			begin
-				@(posedge dut.core_inst.output_enable);
+				@(posedge dut.core_inst.output_layer_enable);
 				output_cycle = cycle_count;
 			end
 			begin
-				@(posedge dut.core_inst.loss_enable);
+				@(posedge dut.core_inst.lookup_layer_enable);
+				lookup_cycle = cycle_count;
+			end
+			begin
+				@(posedge dut.core_inst.loss_layer_enable);
 				loss_cycle = cycle_count;
 			end
 			begin
@@ -195,15 +201,17 @@ module zero_order_tb;
 		$display("INFO: %0s | fetch pulse      @ cycle %0d", test_name, fetch_cycle);
 		$display("INFO: %0s | first mfu_updated@ cycle %0d", test_name, mfu_cycle);
 		$display("INFO: %0s | hidden_enable    @ cycle %0d", test_name, hidden_cycle);
-		$display("INFO: %0s | output_enable    @ cycle %0d", test_name, output_cycle);
-		$display("INFO: %0s | loss_enable      @ cycle %0d", test_name, loss_cycle);
+		$display("INFO: %0s | output_layer_enable @ cycle %0d", test_name, output_cycle);
+		$display("INFO: %0s | lookup_layer_enable @ cycle %0d", test_name, lookup_cycle);
+		$display("INFO: %0s | loss_layer_enable   @ cycle %0d", test_name, loss_cycle);
 		$display("INFO: %0s | loss_ready       @ cycle %0d", test_name, loss_ready_cycle);
 		$display("INFO: %0s | core_done        @ cycle %0d", test_name, done_cycle);
 		$display("INFO: %0s | start -> fetch        = %0d cycles", test_name, fetch_cycle - start_cycle);
 		$display("INFO: %0s | fetch -> mfu_updated  = %0d cycles", test_name, mfu_cycle - fetch_cycle);
 		$display("INFO: %0s | mfu_updated -> hidden = %0d cycles", test_name, hidden_cycle - mfu_cycle);
 		$display("INFO: %0s | hidden -> output      = %0d cycles", test_name, output_cycle - hidden_cycle);
-		$display("INFO: %0s | output -> loss        = %0d cycles", test_name, loss_cycle - output_cycle);
+		$display("INFO: %0s | output -> lookup      = %0d cycles", test_name, lookup_cycle - output_cycle);
+		$display("INFO: %0s | lookup -> loss        = %0d cycles", test_name, loss_cycle - lookup_cycle);
 		$display("INFO: %0s | loss -> loss_ready    = %0d cycles", test_name, loss_ready_cycle - loss_cycle);
 		$display("INFO: %0s | loss_ready -> done    = %0d cycles", test_name, done_cycle - loss_ready_cycle);
 		$display("INFO: %0s | start -> done         = %0d cycles", test_name, done_cycle - start_cycle);

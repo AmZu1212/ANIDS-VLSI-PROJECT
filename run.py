@@ -13,8 +13,8 @@ OUT_DIR = ROOT / "outputs"
 
 
 def usage() -> None:
-    print("Usage: python run.py <tb_filename.v>")
-    print("Example: python run.py my_tb.v")
+    print("Usage: python run.py <tb_filename.sv>")
+    print("Example: python run.py my_tb.sv")
 
 
 def main(argv: list[str]) -> int:
@@ -44,7 +44,7 @@ def main(argv: list[str]) -> int:
     top_module = tb_path.stem
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out_path = OUT_DIR / f"{OUT_BASENAME}_{top_module}.out"
-    src_files = sorted(SRC_DIR.rglob("*.v"))
+    src_files = sorted(SRC_DIR.rglob("*.sv"))
     sources = [tb_path] + src_files
 
     # Build include path list, deduplicated
