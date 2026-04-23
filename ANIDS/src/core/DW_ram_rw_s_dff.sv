@@ -3,24 +3,24 @@ module DW_ram_rw_s_dff #(
 	parameter integer depth      = 8,
 	parameter integer rst_mode   = 0
 ) (
-	clk,	// CE
-	rst_n,	// ????
-	cs_n,	// CSB
-	wr_n,	// WEB
-	rw_addr,// A
-	data_in,// I
-	data_out// O
+	CE,		// clk signal. (CE is rising edge = start.)
+	resetN,	// reset - active low (will be removed)
+	CSB,	// chip select (i.e always 0)
+	WEB,	// Write enable (0 = write, 1 = read)
+	A,		// address
+	I, 		// write input
+	O 		// read output
 );
 
 	localparam integer ADDR_WIDTH = (depth <= 2) ? 1 : $clog2(depth);
 
-	input  wire                       clk;
-	input  wire                       rst_n;
-	input  wire                       cs_n;
-	input  wire                       wr_n;
-	input  wire [ADDR_WIDTH-1:0]      rw_addr;
-	input  wire [data_width-1:0]      data_in;
-	output reg  [data_width-1:0]      data_out;
+	input  wire                       CE;
+	input  wire                       resetN;
+	input  wire                       CSB;
+	input  wire                       WEB;
+	input  wire [ADDR_WIDTH-1:0]      A;
+	input  wire [data_width-1:0]      I;
+	output reg  [data_width-1:0]      O;
 
 	reg [data_width-1:0] mem [0:depth-1];
 	integer i;
@@ -29,45 +29,45 @@ module DW_ram_rw_s_dff #(
 	begin
 		for (i = 0; i < depth; i = i + 1)
 			mem[i] <= {data_width{1'b0}};
-		data_out <= {data_width{1'b0}};
+		O <= {data_width{1'b0}};
 	end
 	endtask
 
 	generate
 		if (rst_mode == 0) begin : gen_async_reset
-			always @(posedge clk or negedge rst_n) begin
-				if (!rst_n) begin
+			always @(posedge CE or negedge resetN) begin
+				if (!resetN) begin
 					reset_storage;
 				end
-				else if (!cs_n) begin
-					if (!wr_n) begin
-						if (rw_addr < depth)
-							mem[rw_addr] <= data_in;
+				else if (!CSB) begin
+					if (!WEB) begin
+						if (A < depth)
+							mem[A] <= I;
 					end
 					else begin
-						if (rw_addr < depth)
-							data_out <= mem[rw_addr];
+						if (A < depth)
+							O <= mem[A];
 						else
-							data_out <= {data_width{1'b0}};
+							O <= {data_width{1'b0}};
 					end
 				end
 			end
 		end
 		else begin : gen_sync_reset
-			always @(posedge clk) begin
-				if (!rst_n) begin
+			always @(posedge CE) begin
+				if (!resetN) begin
 					reset_storage;
 				end
-				else if (!cs_n) begin
-					if (!wr_n) begin
-						if (rw_addr < depth)
-							mem[rw_addr] <= data_in;
+				else if (!CSB) begin
+					if (!WEB) begin
+						if (A < depth)
+							mem[A] <= I;
 					end
 					else begin
-						if (rw_addr < depth)
-							data_out <= mem[rw_addr];
+						if (A < depth)
+							O <= mem[A];
 						else
-							data_out <= {data_width{1'b0}};
+							O <= {data_width{1'b0}};
 					end
 				end
 			end

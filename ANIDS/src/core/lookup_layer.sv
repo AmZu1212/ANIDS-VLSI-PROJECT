@@ -75,13 +75,13 @@ module lookup_layer (
 		.depth      (RAM_DEPTH),
 		.rst_mode   (0)
 	) function_lut_0 (
-		.clk      (clk),
-		.rst_n    (resetN),
-		.cs_n     (~(lookup_enable || lut_wr_en)),
-		.wr_n     (~lut_wr_en),
-		.rw_addr  (ram_addr_0),
-		.data_in  (lut_wr_data),
-		.data_out (lut_data_0)
+		.CE       (clk),
+		.resetN   (resetN),
+		.CSB      (~(lookup_enable || lut_wr_en)),
+		.WEB      (~lut_wr_en),
+		.A        (ram_addr_0),
+		.I        (lut_wr_data),
+		.O        (lut_data_0)
 	);
 
 	DW_ram_rw_s_dff #(
@@ -89,13 +89,13 @@ module lookup_layer (
 		.depth      (RAM_DEPTH),
 		.rst_mode   (0)
 	) function_lut_1 (
-		.clk      (clk),
-		.rst_n    (resetN),
-		.cs_n     (~(lookup_enable || lut_wr_en)),
-		.wr_n     (~lut_wr_en),
-		.rw_addr  (ram_addr_1),
-		.data_in  (lut_wr_data),
-		.data_out (lut_data_1)
+		.CE       (clk),
+		.resetN   (resetN),
+		.CSB      (~(lookup_enable || lut_wr_en)),
+		.WEB      (~lut_wr_en),
+		.A        (ram_addr_1),
+		.I        (lut_wr_data),
+		.O        (lut_data_1)
 	);
 
 	always @(*) begin

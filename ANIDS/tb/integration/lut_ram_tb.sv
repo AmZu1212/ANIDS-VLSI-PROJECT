@@ -9,16 +9,16 @@ module lut_ram_tb;
   localparam RAM_DEPTH  = 1 << ADDR_WIDTH;
 
   // DUT signals
-  reg                       clk;
+  reg                       CE;
   reg                       resetN;
-  reg                       cs_n;
-  reg                       wr_n;
-  reg  [ADDR_WIDTH-1:0]     rw_addr;
-  reg  [DATA_WIDTH-1:0]     wr_data;
-  wire [DATA_WIDTH-1:0]     rd_data;
+  reg                       CSB;
+  reg                       WEB;
+  reg  [ADDR_WIDTH-1:0]     A;
+  reg  [DATA_WIDTH-1:0]     I;
+  wire [DATA_WIDTH-1:0]     O;
 
   // Clock generation: 200 MHz (period 5ns)
-  always #2.5 clk = ~clk;
+  always #2.5 CE = ~CE;
 
   // DUT
   DW_ram_rw_s_dff #(
@@ -26,13 +26,13 @@ module lut_ram_tb;
     .depth      (RAM_DEPTH),
     .rst_mode   (0)
   ) dut (
-    .clk      (clk),
-    .rst_n    (resetN),
-    .cs_n     (cs_n),
-    .wr_n     (wr_n),
-    .rw_addr  (rw_addr),
-    .data_in  (wr_data),
-    .data_out (rd_data)
+    .CE       (CE),
+    .resetN   (resetN),
+    .CSB      (CSB),
+    .WEB      (WEB),
+    .A        (A),
+    .I        (I),
+    .O        (O)
   );
 
   integer idx;
@@ -43,45 +43,45 @@ module lut_ram_tb;
     $dumpvars(0, lut_ram_tb);
 
     // Reset and defaults
-    clk     = 1'b0;
+    CE      = 1'b0;
     resetN  = 1'b0;
-    cs_n    = 1'b1;
-    wr_n    = 1'b1;
-    rw_addr = {ADDR_WIDTH{1'b0}};
-    wr_data = {DATA_WIDTH{1'b0}};
+    CSB     = 1'b1;
+    WEB     = 1'b1;
+    A       = {ADDR_WIDTH{1'b0}};
+    I       = {DATA_WIDTH{1'b0}};
     errors  = 0;
 
     // Release reset
-    repeat (2) @(posedge clk);
+    repeat (2) @(posedge CE);
     resetN = 1'b1;
 
     // Write phase: write each location with its address value
     for (idx = 0; idx < RAM_DEPTH; idx = idx + 1) begin
-      cs_n    <= 1'b0;
-      wr_n    <= 1'b0;
-      rw_addr <= idx[ADDR_WIDTH-1:0];
-      wr_data <= idx[DATA_WIDTH-1:0];
-      @(posedge clk);
+      CSB <= 1'b0;
+      WEB <= 1'b0;
+      A   <= idx[ADDR_WIDTH-1:0];
+      I   <= idx[DATA_WIDTH-1:0];
+      @(posedge CE);
     end
 
     // Return the RAM to idle before the read phase.
-    cs_n <= 1'b1;
-    wr_n <= 1'b1;
-    @(posedge clk);
+    CSB <= 1'b1;
+    WEB <= 1'b1;
+    @(posedge CE);
 
     // Read/verify phase.
     for (idx = 0; idx < RAM_DEPTH; idx = idx + 1) begin
-      cs_n    <= 1'b0;
-      wr_n    <= 1'b1;
-      rw_addr <= idx[ADDR_WIDTH-1:0];
-      @(posedge clk);
+      CSB <= 1'b0;
+      WEB <= 1'b1;
+      A   <= idx[ADDR_WIDTH-1:0];
+      @(posedge CE);
       #1;
-      if (rd_data !== idx[DATA_WIDTH-1:0]) begin
+      if (O !== idx[DATA_WIDTH-1:0]) begin
         $error("Mismatch at addr %0d: got %0h expected %0h",
-               idx, rd_data, idx[DATA_WIDTH-1:0]);
+               idx, O, idx[DATA_WIDTH-1:0]);
         errors = errors + 1;
       end else begin
-        $display("PASS addr %0d data %0h", idx, rd_data);
+        $display("PASS addr %0d data %0h", idx, O);
       end
     end
 
