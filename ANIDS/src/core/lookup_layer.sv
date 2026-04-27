@@ -23,7 +23,6 @@ module lookup_layer (
 	parameter LUT_ADDR_WIDTH   = `LUT_ADDR_WIDTH;
 	parameter COUNTER_WIDTH    = `PIPELINE_COUNTER_WIDTH;
 	parameter PAIR_COUNT       = (1 << (`PIPELINE_STAGE_COUNT_W));
-	parameter RAM_DEPTH        = (1 << LUT_ADDR_WIDTH);
 
 	input  wire                              clk;
 	input  wire                              resetN;
@@ -70,13 +69,8 @@ module lookup_layer (
 		.lut_addr (mapped_addr_1)
 	);
 
-	DW_ram_rw_s_dff #(
-		.data_width (RESULT_OUT_WIDTH),
-		.depth      (RAM_DEPTH),
-		.rst_mode   (0)
-	) function_lut_0 (
+	spram8x256_cb function_lut_0 (
 		.CE       (clk),
-		.resetN   (resetN),
 		.CSB      (~(lookup_enable || lut_wr_en)),
 		.WEB      (~lut_wr_en),
 		.A        (ram_addr_0),
@@ -84,13 +78,8 @@ module lookup_layer (
 		.O        (lut_data_0)
 	);
 
-	DW_ram_rw_s_dff #(
-		.data_width (RESULT_OUT_WIDTH),
-		.depth      (RAM_DEPTH),
-		.rst_mode   (0)
-	) function_lut_1 (
+	spram8x256_cb function_lut_1 (
 		.CE       (clk),
-		.resetN   (resetN),
 		.CSB      (~(lookup_enable || lut_wr_en)),
 		.WEB      (~lut_wr_en),
 		.A        (ram_addr_1),
