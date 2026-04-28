@@ -11,6 +11,8 @@ set_app_var link_library   [list * tsl18fs120_typ.db spram8x256_cb_typ.db dw_fou
 
 # load RTLS manually
 
+set_app_var search_path [concat $search_path [list ANIDS-VLSI-PROJECT/ANIDS ANIDS-VLSI-PROJECT/ANIDS/src ANIDS-VLSI-PROJECT/ANIDS/src/core]]
+
 set analyze_t0 [clock seconds]
 analyze -format sverilog {
 	ANIDS-VLSI-PROJECT/ANIDS/src/anids_core.sv
