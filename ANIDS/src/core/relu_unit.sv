@@ -26,15 +26,15 @@ module relu_unit (
 		if (!resetN) begin
 			out_data = {DATA_WIDTH{1'b0}};
 		end
-		else if (!ready) begin
-			out_data = {DATA_WIDTH{1'b0}};
-		end
-		else if (in_data[DATA_WIDTH-1]) begin
-			// if the number is negative (i.e sign bit is 1)
-			out_data = {DATA_WIDTH{1'b0}};
-		end
-		else begin
-			out_data = in_data;
+		else if (ready) begin
+			if (in_data[DATA_WIDTH-1]) begin
+				// When ready is asserted, capture the ReLU result and hold it
+				// until the next ready pulse.
+				out_data = {DATA_WIDTH{1'b0}};
+			end
+			else begin
+				out_data = in_data;
+			end
 		end
 	end
 

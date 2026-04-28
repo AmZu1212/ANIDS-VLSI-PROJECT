@@ -39,7 +39,6 @@ module anids_top(
 
 
 	// APB Interface
-	input  wire                   		pclk;
 	input  wire                   		presetN;
 	input  wire [`APB_ADDR_WIDTH-1:0]	paddr;
 	input  wire [`APB_DATA_WIDTH-1:0] 	pwdata;
@@ -68,7 +67,7 @@ module anids_top(
 
 	regfile regfile_inst (
 		// APB Interface
-		.pclk       (pclk),
+		.pclk       (sys_clk),
 		.presetN    (presetN),
 		.paddr      (paddr),
 		.pwdata     (pwdata),

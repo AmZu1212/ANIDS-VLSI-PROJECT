@@ -66,7 +66,7 @@ module hidden_layer (
 			relu_unit relu_inst (
 				.in_data  (pre_relu_result),
 				.resetN   (resetN),
-				.ready    (1'b1),
+				.ready    (ready[i]),
 				.out_data (results[i])
 			);
 		end

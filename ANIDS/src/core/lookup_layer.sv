@@ -70,18 +70,20 @@ module lookup_layer (
 	);
 
 	spram8x256_cb function_lut_0 (
-		.CE       (clk),
+		.CEB      (~clk),
 		.CSB      (~(lookup_enable || lut_wr_en)),
 		.WEB      (~lut_wr_en),
+		.OEB	  (1'b0),
 		.A        (ram_addr_0),
 		.I        (lut_wr_data),
 		.O        (lut_data_0)
 	);
 
 	spram8x256_cb function_lut_1 (
-		.CE       (clk),
+		.CEB      (~clk),
 		.CSB      (~(lookup_enable || lut_wr_en)),
 		.WEB      (~lut_wr_en),
+		.OEB	  (1'b0),
 		.A        (ram_addr_1),
 		.I        (lut_wr_data),
 		.O        (lut_data_1)

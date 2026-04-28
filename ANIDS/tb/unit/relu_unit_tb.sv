@@ -29,14 +29,16 @@ module relu_unit_tb;
 		ready   = 1'b0;
 
 		#1;
-		check_output(8'sd25,  1'b0, 1'b1, 8'd0,  "reset clears output");
-		check_output(8'sd25,  1'b1, 1'b0, 8'd0,  "ready low blocks positive input");
-		check_output(-8'sd7,  1'b1, 1'b0, 8'd0,  "ready low blocks negative input");
-		check_output(8'sd25,  1'b1, 1'b1, 8'd25, "positive input passes through");
-		check_output(8'sd0,   1'b1, 1'b1, 8'd0,  "zero input stays zero");
-		check_output(-8'sd1,  1'b1, 1'b1, 8'd0,  "negative one clamps to zero");
-		check_output(-8'sd64, 1'b1, 1'b1, 8'd0,  "negative value clamps to zero");
-		check_output(8'sd127, 1'b1, 1'b1, 8'd127,"max positive passes through");
+		check_output(8'sd25,  1'b0, 1'b1, 8'd0,   "reset clears output");
+		check_output(8'sd25,  1'b1, 1'b0, 8'd0,   "ready low holds reset value");
+		check_output(8'sd25,  1'b1, 1'b1, 8'd25,  "ready high captures positive input");
+		check_output(-8'sd7,  1'b1, 1'b0, 8'd25,  "ready low holds previous positive result");
+		check_output(8'sd0,   1'b1, 1'b1, 8'd0,   "ready high captures zero input");
+		check_output(8'sd64,  1'b1, 1'b0, 8'd0,   "ready low holds zero result");
+		check_output(-8'sd1,  1'b1, 1'b1, 8'd0,   "negative one clamps to zero");
+		check_output(-8'sd64, 1'b1, 1'b1, 8'd0,   "negative value clamps to zero");
+		check_output(8'sd127, 1'b1, 1'b1, 8'd127, "max positive passes through");
+		check_output(8'sd1,   1'b1, 1'b0, 8'd127, "ready low holds max positive result");
 
 		$display("RELU_UNIT TB PASSED");
 		$finish;
