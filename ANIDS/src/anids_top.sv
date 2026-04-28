@@ -39,6 +39,7 @@ module anids_top(
 
 
 	// APB Interface
+	input  wire                   		pclk;
 	input  wire                   		presetN;
 	input  wire [`APB_ADDR_WIDTH-1:0]	paddr;
 	input  wire [`APB_DATA_WIDTH-1:0] 	pwdata;
