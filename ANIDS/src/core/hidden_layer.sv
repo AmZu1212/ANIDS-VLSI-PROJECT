@@ -1,7 +1,7 @@
 // ANIDS Hidden Layer
 `include "anids_defines.vh"
 
-module hidden_layer_original (
+module hidden_layer (
 		clk,
 		resetN,
 		enable,
