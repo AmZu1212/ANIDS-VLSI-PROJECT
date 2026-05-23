@@ -49,4 +49,6 @@ write -format ddc -hierarchy -output relu_unit_precompile.ddc
 puts "Write DDC time: [expr {[clock seconds] - $write_ddc_t0}] seconds"
 
 # Run Compile
+set compile_t0 [clock seconds]
 compile
+puts "Compile time: [expr {[clock seconds] - $compile_t0}] seconds"

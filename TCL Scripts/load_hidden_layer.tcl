@@ -18,16 +18,18 @@ set_app_var search_path [concat $search_path [list ANIDS-VLSI-PROJECT/ANIDS ANID
 
 set analyze_t0 [clock seconds]
 analyze -format sverilog {
+	ANIDS-VLSI-PROJECT/ANIDS/src/core/relu_unit.sv
 	ANIDS-VLSI-PROJECT/ANIDS/src/core/hidden_layer_unit.sv
+	ANIDS-VLSI-PROJECT/ANIDS/src/core/hidden_layer.sv
 }
 puts "Analyze time: [expr {[clock seconds] - $analyze_t0}] seconds"
 
 set elaborate_t0 [clock seconds]
-elaborate hidden_layer_unit
+elaborate hidden_layer
 puts "Elaborate time: [expr {[clock seconds] - $elaborate_t0}] seconds"
 
 # Set top
-current_design hidden_layer_unit
+current_design hidden_layer
 
 # Link and check
 set link_t0 [clock seconds]
@@ -47,10 +49,10 @@ set_dont_touch [get_cells -hier *function_lut*]
 puts "SRAM macro instances protected: [sizeof_collection [get_cells -hier *function_lut*]]"
 
 set write_ddc_t0 [clock seconds]
-write -format ddc -hierarchy -output hidden_layer_unit_precompile.ddc
+write -format ddc -hierarchy -output hidden_layer_precompile.ddc
 puts "Write DDC time: [expr {[clock seconds] - $write_ddc_t0}] seconds"
 
-# Run Compile (takes logn so commented)
+# Run Compile
 set compile_t0 [clock seconds]
 compile
 puts "Compile time: [expr {[clock seconds] - $compile_t0}] seconds"
