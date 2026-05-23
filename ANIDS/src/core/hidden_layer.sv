@@ -19,7 +19,7 @@ module hidden_layer (
 	parameter RESULT_WIDTH       = `HL_RESULT_WIDTH;
 	parameter COUNTER_WIDTH      = `PIPELINE_COUNTER_WIDTH;
 	parameter REGFILE_ADDR_WIDTH = `APB_ADDR_WIDTH;
-	parameter NEURON_COUNT       = 2;
+	parameter NEURON_COUNT       = 4;
 	parameter N_WIDTH            = `APB_DATA_WIDTH;
 
 	// ----------------------------------------------------------------------
