@@ -57,3 +57,8 @@ puts "Write DDC time: [expr {[clock seconds] - $write_ddc_t0}] seconds"
 set compile_t0 [clock seconds]
 compile
 puts "Compile time: [expr {[clock seconds] - $compile_t0}] seconds"
+
+# Save compiled design
+set write_compiled_ddc_t0 [clock seconds]
+write -format ddc -hierarchy -output pipeline_manager_compiled.ddc
+puts "Write compiled DDC time: [expr {[clock seconds] - $write_compiled_ddc_t0}] seconds"
