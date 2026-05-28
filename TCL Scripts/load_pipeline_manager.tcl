@@ -15,6 +15,8 @@ set_app_var hdlin_while_loop_iterations 20000
 
 # load RTLs manually
 set_app_var search_path [concat $search_path [list ANIDS-VLSI-PROJECT/ANIDS ANIDS-VLSI-PROJECT/ANIDS/src ANIDS-VLSI-PROJECT/ANIDS/src/core]]
+set ddc_output_dir {ANIDS-VLSI-PROJECT/Saved ddc}
+file mkdir $ddc_output_dir
 
 set analyze_t0 [clock seconds]
 analyze -format sverilog {
@@ -50,7 +52,7 @@ if {[sizeof_collection $function_lut_cells] > 0} {
 puts "SRAM macro instances protected: [sizeof_collection $function_lut_cells]"
 
 set write_ddc_t0 [clock seconds]
-write -format ddc -hierarchy -output pipeline_manager_precompile.ddc
+write -format ddc -hierarchy -output [file join $ddc_output_dir pipeline_manager_precompile.ddc]
 puts "Write DDC time: [expr {[clock seconds] - $write_ddc_t0}] seconds"
 
 # Run Compile
@@ -60,5 +62,5 @@ puts "Compile time: [expr {[clock seconds] - $compile_t0}] seconds"
 
 # Save compiled design
 set write_compiled_ddc_t0 [clock seconds]
-write -format ddc -hierarchy -output pipeline_manager_compiled.ddc
+write -format ddc -hierarchy -output [file join $ddc_output_dir pipeline_manager_compiled.ddc]
 puts "Write compiled DDC time: [expr {[clock seconds] - $write_compiled_ddc_t0}] seconds"
