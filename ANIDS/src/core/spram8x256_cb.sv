@@ -32,7 +32,7 @@ module spram8x256_cb (
 			mem[i] = {DATA_WIDTH{1'b0}};
 	end
 
-	always @(posedge CEB) begin
+	always @(negedge CEB) begin
 		if (!CSB) begin
 			if (!WEB) begin
 				mem[A] <= I;
