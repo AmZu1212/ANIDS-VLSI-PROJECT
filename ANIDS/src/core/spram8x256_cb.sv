@@ -1,3 +1,6 @@
+
+// this is a dummy module so we can actually compile the project.
+// the real project, uses the labs memory file (which is under the NDA)
 module spram8x256_cb (
 	CE,		// clk signal. (CE is rising edge = start.)
 	CSB,	// chip select (i.e always 0)
