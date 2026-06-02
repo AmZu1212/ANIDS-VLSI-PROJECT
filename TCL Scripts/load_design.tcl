@@ -66,6 +66,6 @@ write -format ddc -hierarchy -output anids_top_precompile.ddc
 puts "Write DDC time: [expr {[clock seconds] - $write_ddc_t0}] seconds"
 
 # Run Compile (takes logn so commented)
-# set compile_t0 [clock seconds]
+set compile_t0 [clock seconds]
 # compile
-# puts "Compile time: [expr {[clock seconds] - $compile_t0}] seconds"
+puts "Compile time: [expr {[clock seconds] - $compile_t0}] seconds"
