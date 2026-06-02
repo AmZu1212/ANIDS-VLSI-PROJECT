@@ -9,27 +9,23 @@ module lut_ram_tb;
   localparam RAM_DEPTH  = 1 << ADDR_WIDTH;
 
   // DUT signals
-  reg                       CE;
-  reg                       resetN;
+  reg                       CEB;
   reg                       CSB;
   reg                       WEB;
+  reg                       OEB;
   reg  [ADDR_WIDTH-1:0]     A;
   reg  [DATA_WIDTH-1:0]     I;
   wire [DATA_WIDTH-1:0]     O;
 
   // Clock generation: 200 MHz (period 5ns)
-  always #2.5 CE = ~CE;
+  always #2.5 CEB = ~CEB;
 
   // DUT
-  DW_ram_rw_s_dff #(
-    .data_width (DATA_WIDTH),
-    .depth      (RAM_DEPTH),
-    .rst_mode   (0)
-  ) dut (
-    .CE       (CE),
-    .resetN   (resetN),
+  spram8x256_cb dut (
+    .CEB      (CEB),
     .CSB      (CSB),
     .WEB      (WEB),
+    .OEB      (OEB),
     .A        (A),
     .I        (I),
     .O        (O)
@@ -43,17 +39,16 @@ module lut_ram_tb;
     $dumpvars(0, lut_ram_tb);
 
     // Reset and defaults
-    CE      = 1'b0;
-    resetN  = 1'b0;
+    CEB     = 1'b0;
     CSB     = 1'b1;
     WEB     = 1'b1;
+    OEB     = 1'b0;
     A       = {ADDR_WIDTH{1'b0}};
     I       = {DATA_WIDTH{1'b0}};
     errors  = 0;
 
-    // Release reset
-    repeat (2) @(posedge CE);
-    resetN = 1'b1;
+    // Initial idle cycles before access
+    repeat (2) @(negedge CEB);
 
     // Write phase: write each location with its address value
     for (idx = 0; idx < RAM_DEPTH; idx = idx + 1) begin
@@ -61,20 +56,20 @@ module lut_ram_tb;
       WEB <= 1'b0;
       A   <= idx[ADDR_WIDTH-1:0];
       I   <= idx[DATA_WIDTH-1:0];
-      @(posedge CE);
+      @(negedge CEB);
     end
 
     // Return the RAM to idle before the read phase.
     CSB <= 1'b1;
     WEB <= 1'b1;
-    @(posedge CE);
+    @(negedge CEB);
 
     // Read/verify phase.
     for (idx = 0; idx < RAM_DEPTH; idx = idx + 1) begin
       CSB <= 1'b0;
       WEB <= 1'b1;
       A   <= idx[ADDR_WIDTH-1:0];
-      @(posedge CE);
+      @(negedge CEB);
       #1;
       if (O !== idx[DATA_WIDTH-1:0]) begin
         $error("Mismatch at addr %0d: got %0h expected %0h",
