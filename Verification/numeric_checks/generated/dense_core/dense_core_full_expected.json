@@ -1,0 +1,26 @@
+{
+  "loss": 11,
+  "outlier": 1,
+  "threshold": 10,
+  "vector_hex": "2DE42DE42DE42DE42DE42DE42DE42DE4",
+  "hidden_first8": [
+    0,
+    3,
+    96,
+    0,
+    3,
+    96,
+    0,
+    3
+  ],
+  "output_first8": [
+    44,
+    -48,
+    8,
+    44,
+    -48,
+    8,
+    44,
+    -48
+  ]
+}
