@@ -4,6 +4,8 @@
 module zero_order_loss_compare_tb;
 
 	localparam [`LUT_ADDR_WIDTH-1:0] ZERO_LUT_ADDR = (1 << (`LUT_ADDR_WIDTH - 1));
+	localparam [`APB_DATA_WIDTH-1:0] STATUS_NOT_ANOMALY = 8'd0;
+	localparam [`APB_DATA_WIDTH-1:0] STATUS_ANOMALY     = 8'd1;
 
 	reg                           sys_clk;
 	reg                           sys_reset_n;
@@ -94,6 +96,8 @@ module zero_order_loss_compare_tb;
 		input [`APB_DATA_WIDTH-1:0] threshold_value,
 		input [`LUT_DATA_WIDTH-1:0] lut_zero_value
 	);
+		reg signed [`LF_OUT_WIDTH-1:0] captured_loss;
+		reg                            captured_outlier;
 	begin
 		apply_reset;
 		program_zero_order_model(threshold_value, lut_zero_value);
@@ -102,19 +106,32 @@ module zero_order_loss_compare_tb;
 			dma_send_vector_file_repeat(vector_file, 1);
 			begin
 				cpu_write_APB(`START_REG, 8'd1);
-				@(posedge dut.core_done);
-				#2;
+				wait_for_terminal_status;
 				$display(
 					"RTL_COMPARE case=%0s loss=%0d outlier=%0b status=%0d",
 					case_name,
-					dut.core_loss_result,
-					dut.core_outlier_pulse,
+					captured_loss,
+					captured_outlier,
 					dut.regfile_bus[`RESULT_REG]
 				);
+			end
+			begin
+				@(posedge dut.core_done);
+				captured_loss = dut.core_loss_result;
+				captured_outlier = dut.core_outlier_pulse;
 			end
 		join
 
 		cpu_write_APB(`START_REG, 8'd0);
+	end
+	endtask
+
+	task wait_for_terminal_status;
+	begin
+		while (dut.regfile_bus[`RESULT_REG] !== STATUS_NOT_ANOMALY &&
+		       dut.regfile_bus[`RESULT_REG] !== STATUS_ANOMALY)
+			@(posedge sys_clk);
+		#2;
 	end
 	endtask
 

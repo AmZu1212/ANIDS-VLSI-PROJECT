@@ -10,6 +10,8 @@ from anids_reference_model import REPO_ROOT, load_hex_vector, run_anids_model, z
 
 
 ZERO_LUT_ADDR = 1 << 7
+STATUS_NOT_ANOMALY = 0
+STATUS_ANOMALY = 1
 
 
 @dataclass
@@ -39,14 +41,16 @@ CASES = [
 RTL_PATTERN = re.compile(r"RTL_COMPARE case=(?P<case>\S+) loss=(?P<loss>-?\d+) outlier=(?P<outlier>[01]) status=(?P<status>\d+)")
 
 
-def reference_for_case(case: CompareCase) -> tuple[int, int]:
+def reference_for_case(case: CompareCase) -> tuple[int, int, int]:
     config = zero_initialized_model(
         n=128,
         threshold=case.threshold,
         lut_updates={ZERO_LUT_ADDR: case.lut_zero_value},
     )
     vector = load_hex_vector(case.vector_file)
-    return run_anids_model(vector, config)
+    reference_loss, reference_outlier = run_anids_model(vector, config)
+    reference_status = STATUS_ANOMALY if reference_outlier else STATUS_NOT_ANOMALY
+    return reference_loss, reference_outlier, reference_status
 
 
 def run_rtl_compare_tb() -> dict[str, tuple[int, int, int]]:
@@ -89,15 +93,19 @@ def main() -> int:
 
     failed = False
     for case in CASES:
-        reference_loss, reference_outlier = reference_for_case(case)
+        reference_loss, reference_outlier, reference_status = reference_for_case(case)
         rtl_loss, rtl_outlier, rtl_status = rtl_results[case.name]
         print(
             f"REFERENCE_COMPARE case={case.name} "
             f"reference_loss={reference_loss} rtl_loss={rtl_loss} "
             f"reference_outlier={reference_outlier} rtl_outlier={rtl_outlier} "
-            f"rtl_status={rtl_status}"
+            f"reference_status={reference_status} rtl_status={rtl_status}"
         )
-        if (reference_loss, reference_outlier) != (rtl_loss, rtl_outlier):
+        if (reference_loss, reference_outlier, reference_status) != (
+            rtl_loss,
+            rtl_outlier,
+            rtl_status,
+        ):
             failed = True
 
     if failed:
