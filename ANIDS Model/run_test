@@ -1,0 +1,290 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import os
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+MODEL_DIR = Path(__file__).resolve().parent
+CPP_SRC = MODEL_DIR / "cpp" / "anids_model.cpp"
+CPP_EXE = MODEL_DIR / "build" / ("anids_model.exe" if os.name == "nt" else "anids_model")
+RTL_TB = MODEL_DIR / "rtl" / "anids_model_compare_tb.sv"
+OUT_DIR = ROOT / "outputs"
+
+START_REG = 0
+N_REG = 1
+THRESHOLD_REG = 2
+LUT_ADDR_REG = 4
+LUT_DATA_REG = 5
+LUT_CTRL_REG = 6
+HL_WEIGHT_BASE = 8
+HL_WEIGHT_COUNT = 64 * 128
+HL_BIAS_BASE = HL_WEIGHT_BASE + HL_WEIGHT_COUNT
+OL_WEIGHT_BASE = HL_BIAS_BASE + 64
+OL_BIAS_BASE = OL_WEIGHT_BASE + 128 * 64
+
+RESULT_RE = re.compile(r"^RESULT\s+vector=(\d+)\s+loss=(-?\d+)\s+anomaly=([01])\s*$")
+
+
+def usage() -> int:
+    print("Usage: ./run_test <test-name-or-path>")
+    print("Example: ./run_test test1")
+    return 2
+
+
+def parse_int(token: str) -> int:
+    return int(token, 0)
+
+
+def u8(value: int) -> int:
+    return value & 0xFF
+
+
+def test_dir_from_arg(arg: str) -> Path:
+    candidate = Path(arg)
+    if candidate.is_dir():
+        return candidate.resolve()
+    candidate = MODEL_DIR / "tests" / arg
+    if candidate.is_dir():
+        return candidate.resolve()
+    raise FileNotFoundError(f"test folder not found: {arg}")
+
+
+def require_file(path: Path) -> None:
+    if not path.is_file():
+        raise FileNotFoundError(f"missing required file: {path}")
+
+
+def test_output_dir(test_dir: Path) -> Path:
+    out_dir = test_dir / "outputs"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    return out_dir
+
+
+def generate_program(test_dir: Path) -> Path:
+    weights_path = test_dir / "weights.txt"
+    threshold_path = test_dir / "threshold.txt"
+    loss_function_path = test_dir / "loss_function.txt"
+    program_path = test_output_dir(test_dir) / "program.prog"
+
+    require_file(weights_path)
+    require_file(threshold_path)
+    require_file(loss_function_path)
+
+    writes: list[tuple[int, int]] = [(START_REG, 0)]
+
+    n_value = 128
+    weighted_writes: list[tuple[int, int]] = []
+
+    for line_no, raw_line in enumerate(weights_path.read_text(encoding="ascii").splitlines(), start=1):
+        line = raw_line.split("#", 1)[0].strip()
+        if not line:
+            continue
+        fields = line.split()
+        kind = fields[0]
+        try:
+            if kind == "N":
+                if len(fields) != 2:
+                    raise ValueError("N expects: N <value>")
+                n_value = parse_int(fields[1])
+            elif kind == "HLW":
+                if len(fields) != 4:
+                    raise ValueError("HLW expects: HLW <neuron> <feature> <value>")
+                neuron, feature, value = map(parse_int, fields[1:])
+                weighted_writes.append((HL_WEIGHT_BASE + neuron * 128 + feature, u8(value)))
+            elif kind == "HLB":
+                if len(fields) != 3:
+                    raise ValueError("HLB expects: HLB <neuron> <value>")
+                neuron, value = map(parse_int, fields[1:])
+                weighted_writes.append((HL_BIAS_BASE + neuron, u8(value)))
+            elif kind == "OLW":
+                if len(fields) != 4:
+                    raise ValueError("OLW expects: OLW <neuron> <hidden_index> <value>")
+                neuron, hidden_idx, value = map(parse_int, fields[1:])
+                weighted_writes.append((OL_WEIGHT_BASE + neuron * 64 + hidden_idx, u8(value)))
+            elif kind == "OLB":
+                if len(fields) != 3:
+                    raise ValueError("OLB expects: OLB <neuron> <value>")
+                neuron, value = map(parse_int, fields[1:])
+                weighted_writes.append((OL_BIAS_BASE + neuron, u8(value)))
+            else:
+                raise ValueError(f"unknown directive: {kind}")
+        except Exception as exc:
+            raise ValueError(f"{weights_path}:{line_no}: {exc}") from exc
+
+    lut_writes: list[tuple[int, int]] = []
+    for line_no, raw_line in enumerate(loss_function_path.read_text(encoding="ascii").splitlines(), start=1):
+        line = raw_line.split("#", 1)[0].strip()
+        if not line:
+            continue
+        fields = line.split()
+        try:
+            if fields[0] == "LUT":
+                if len(fields) != 3:
+                    raise ValueError("LUT expects: LUT <addr> <value>")
+                addr, value = map(parse_int, fields[1:])
+            else:
+                if len(fields) != 2:
+                    raise ValueError("expected: LUT <addr> <value> or <addr> <value>")
+                addr, value = map(parse_int, fields)
+            lut_writes.extend([
+                (LUT_ADDR_REG, u8(addr)),
+                (LUT_DATA_REG, u8(value)),
+                (LUT_CTRL_REG, 1),
+                (LUT_CTRL_REG, 0),
+            ])
+        except Exception as exc:
+            raise ValueError(f"{loss_function_path}:{line_no}: {exc}") from exc
+
+    threshold_text = threshold_path.read_text(encoding="ascii").split("#", 1)[0].strip().split()[0]
+    threshold = parse_int(threshold_text)
+
+    writes.append((N_REG, u8(n_value)))
+    writes.append((THRESHOLD_REG, u8(threshold)))
+    writes.extend(weighted_writes)
+    writes.extend(lut_writes)
+
+    with program_path.open("w", encoding="ascii") as f:
+        for addr, data in writes:
+            f.write(f"{addr:04X} {data:02X}\n")
+
+    return program_path
+
+
+def compile_cpp() -> None:
+    MODEL_DIR.joinpath("build").mkdir(parents=True, exist_ok=True)
+    cxx = shutil.which("g++") or shutil.which("clang++")
+    if cxx is None:
+        raise RuntimeError("could not find g++ or clang++ on PATH")
+    cmd = [cxx, "-std=c++17", "-O2", "-Wall", "-Wextra", str(CPP_SRC), "-o", str(CPP_EXE)]
+    subprocess.run(cmd, cwd=ROOT, check=True)
+
+
+def run_cpp(test_dir: Path) -> Path:
+    compile_cpp()
+    out_path = test_output_dir(test_dir) / "cpp.out"
+    cmd = [
+        str(CPP_EXE),
+        str(test_dir / "weights.txt"),
+        str(test_dir / "threshold.txt"),
+        str(test_dir / "loss_function.txt"),
+        str(test_dir / "inputs.txt"),
+    ]
+    proc = subprocess.run(cmd, cwd=ROOT, text=True, capture_output=True, check=False)
+    out_path.write_text(proc.stdout, encoding="ascii")
+    if proc.returncode != 0:
+        sys.stderr.write(proc.stderr)
+        raise RuntimeError(f"C++ model failed with exit code {proc.returncode}")
+    return out_path
+
+
+def compile_rtl() -> Path:
+    iverilog = shutil.which("iverilog")
+    if iverilog is None:
+        raise RuntimeError("could not find iverilog on PATH")
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out_path = OUT_DIR / "sim_anids_model_compare_tb.out"
+    src_dir = ROOT / "ANIDS" / "src"
+    tb_dir = ROOT / "ANIDS" / "tb"
+    sources = [RTL_TB] + sorted(src_dir.rglob("*.sv"))
+    include_dirs = [ROOT / "ANIDS", MODEL_DIR / "rtl", src_dir, tb_dir]
+    include_dirs.extend(path for path in src_dir.rglob("*") if path.is_dir())
+
+    include_args: list[str] = []
+    seen: set[str] = set()
+    for inc in include_dirs:
+        resolved = str(inc.resolve())
+        if resolved not in seen:
+            seen.add(resolved)
+            include_args.extend(["-I", resolved])
+
+    cmd = [
+        iverilog,
+        "-g2012",
+        *include_args,
+        "-s",
+        "anids_model_compare_tb",
+        "-o",
+        str(out_path),
+        *[str(path) for path in sources],
+    ]
+    subprocess.run(cmd, cwd=ROOT, check=True)
+    return out_path
+
+
+def run_rtl(test_dir: Path, program_path: Path) -> Path:
+    vvp = shutil.which("vvp")
+    if vvp is None:
+        raise RuntimeError("could not find vvp on PATH")
+    sim = compile_rtl()
+    out_path = test_output_dir(test_dir) / "verilog.out"
+    cmd = [vvp, str(sim), f"+PROGRAM={program_path}", f"+INPUTS={test_dir / 'inputs.txt'}"]
+    proc = subprocess.run(cmd, cwd=ROOT, text=True, capture_output=True, check=False)
+    result_lines = "\n".join(line for line in proc.stdout.splitlines() if RESULT_RE.match(line))
+    out_path.write_text(result_lines + ("\n" if result_lines else ""), encoding="ascii")
+    if proc.returncode != 0:
+        sys.stderr.write(proc.stdout)
+        sys.stderr.write(proc.stderr)
+        raise RuntimeError(f"RTL simulation failed with exit code {proc.returncode}")
+    return out_path
+
+
+def parse_results(path: Path) -> list[tuple[int, int, int]]:
+    results: list[tuple[int, int, int]] = []
+    for line_no, line in enumerate(path.read_text(encoding="ascii").splitlines(), start=1):
+        match = RESULT_RE.match(line.strip())
+        if not match:
+            raise ValueError(f"{path}:{line_no}: bad result line: {line}")
+        results.append((int(match.group(1)), int(match.group(2)), int(match.group(3))))
+    return results
+
+
+def write_diff(test_dir: Path, cpp_out: Path, rtl_out: Path) -> bool:
+    cpp = parse_results(cpp_out)
+    rtl = parse_results(rtl_out)
+    passed = cpp == rtl
+    diff_path = test_output_dir(test_dir) / "diff.out"
+    with diff_path.open("w", encoding="ascii") as f:
+        if passed:
+            f.write("PASS: cpp.out and verilog.out match\n")
+        else:
+            f.write("FAIL: cpp.out and verilog.out differ\n")
+            f.write("\nCPP:\n")
+            f.write(cpp_out.read_text(encoding="ascii"))
+            f.write("\nVERILOG:\n")
+            f.write(rtl_out.read_text(encoding="ascii"))
+    return passed
+
+
+def main(argv: list[str]) -> int:
+    if len(argv) != 2:
+        return usage()
+
+    try:
+        test_dir = test_dir_from_arg(argv[1])
+        require_file(test_dir / "weights.txt")
+        require_file(test_dir / "threshold.txt")
+        require_file(test_dir / "loss_function.txt")
+        require_file(test_dir / "inputs.txt")
+        program_path = generate_program(test_dir)
+        cpp_out = run_cpp(test_dir)
+        rtl_out = run_rtl(test_dir, program_path)
+        passed = write_diff(test_dir, cpp_out, rtl_out)
+        print(f"cpp output:     {cpp_out}")
+        print(f"verilog output: {rtl_out}")
+        print(f"diff output:    {test_output_dir(test_dir) / 'diff.out'}")
+        print("PASS" if passed else "FAIL")
+        return 0 if passed else 1
+    except Exception as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv))

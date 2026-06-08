@@ -1,0 +1,2 @@
+# Zero model sanity case.
+N 128
