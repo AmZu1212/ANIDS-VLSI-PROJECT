@@ -1,3 +1,4 @@
+// Purpose: verifies one output-layer neuron MAC path, bias handling, ready timing, and saturation.
 // ANIDS - Output Layer Processing Unit Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"

@@ -1,3 +1,4 @@
+// Purpose: verifies threshold comparison, signed behavior, output_ready, and single-cycle outlier pulses.
 // ANIDS - Outlier Detector Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"

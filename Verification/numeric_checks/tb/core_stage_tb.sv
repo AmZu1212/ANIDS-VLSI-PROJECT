@@ -1,3 +1,4 @@
+// Purpose: runs generated full-core numeric cases through ANIDS and prints RTL loss/outlier results.
 `timescale 1ns/100ps
 `include "anids_defines.vh"
 

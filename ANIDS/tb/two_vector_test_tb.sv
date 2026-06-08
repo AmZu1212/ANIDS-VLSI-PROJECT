@@ -1,3 +1,4 @@
+// Purpose: verifies steady-state result-to-result timing by streaming two vectors through ANIDS.
 // ANIDS - Two-Vector End-to-End Timing Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"

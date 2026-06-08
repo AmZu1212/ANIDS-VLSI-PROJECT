@@ -1,3 +1,4 @@
+// Purpose: emits RTL loss/outlier results for generated sparse and dense weighted comparison cases.
 `timescale 1ns/100ps
 `include "anids_defines.vh"
 

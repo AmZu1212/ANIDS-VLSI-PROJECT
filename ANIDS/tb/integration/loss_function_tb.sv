@@ -1,3 +1,4 @@
+// Purpose: verifies loss accumulation over feature/function pairs, signed values, truncation, and ready timing.
 // ANIDS - Loss Function Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"

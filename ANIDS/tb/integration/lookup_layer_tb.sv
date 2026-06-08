@@ -1,3 +1,4 @@
+// Purpose: verifies LUT programming, signed result mapping, lookup buffering, and overlap with the loss stage.
 `timescale 1ns/100ps
 `include "anids_defines.vh"
 

@@ -1,3 +1,4 @@
+// Purpose: verifies the integrated hidden layer with APB-programmed weights, biases, indexing, and ready outputs.
 // ANIDS - Hidden Layer Integration Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"

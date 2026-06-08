@@ -1,3 +1,4 @@
+// Purpose: verifies ReLU output clamping, reset behavior, and ready/hold control behavior.
 // ANIDS - ReLU Unit Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"

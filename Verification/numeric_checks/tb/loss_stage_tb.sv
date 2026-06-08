@@ -1,3 +1,4 @@
+// Purpose: runs generated loss-stage numeric cases and prints RTL loss values for reference comparison.
 `timescale 1ns/100ps
 `include "anids_defines.vh"
 

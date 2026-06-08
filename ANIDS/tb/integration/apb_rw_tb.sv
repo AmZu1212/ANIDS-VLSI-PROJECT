@@ -1,3 +1,4 @@
+// Purpose: verifies APB register write/read access through the full ANIDS top-level.
 // ANIDS - APB Read/Write Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"

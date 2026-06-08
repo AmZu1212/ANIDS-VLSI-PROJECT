@@ -1,3 +1,4 @@
+// Purpose: emits RTL loss/outlier results for zero-order cases used by the Python comparison flow.
 `timescale 1ns/100ps
 `include "anids_defines.vh"
 

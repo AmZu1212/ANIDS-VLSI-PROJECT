@@ -1,3 +1,4 @@
+// Purpose: runs end-to-end zero-order ANIDS cases and records basic status and timing behavior.
 // ANIDS - Zero Order End-to-End System Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"

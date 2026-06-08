@@ -1,3 +1,4 @@
+// Purpose: verifies one hidden-layer neuron accumulation path, bias, ReLU, ready timing, and saturation.
 // ANIDS - Hidden Layer Unit Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"

@@ -1,3 +1,4 @@
+// Purpose: verifies DMA fetch/valid handshake behavior and 128-bit feature vector capture.
 // ANIDS - Memory Fetch Unit Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"

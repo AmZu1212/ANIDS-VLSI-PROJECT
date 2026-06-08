@@ -1,3 +1,4 @@
+// Purpose: runs generated output-layer numeric cases and prints RTL output vectors for reference comparison.
 `timescale 1ns/100ps
 `include "anids_defines.vh"
 

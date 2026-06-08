@@ -1,3 +1,4 @@
+// Purpose: measures first-result end-to-end pipeline latency through the full ANIDS top-level.
 // ANIDS - End-to-End Pipeline Timing Probe
 `timescale 1ns/100ps
 `include "anids_defines.vh"

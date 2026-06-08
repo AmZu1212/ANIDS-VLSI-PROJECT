@@ -1,3 +1,4 @@
+// Purpose: verifies 2-bit feature-pair extraction from a 128-bit input vector using the pipeline counter.
 // ANIDS - Input Layer Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"

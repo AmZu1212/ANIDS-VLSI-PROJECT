@@ -1,3 +1,4 @@
+// Purpose: verifies the integrated output layer with APB-programmed weights, biases, indexing, and ready outputs.
 // ANIDS - Output Layer Integration Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"

@@ -1,3 +1,4 @@
+// Purpose: compares the C++ model outputs against the full RTL top-level for a generated model test.
 `timescale 1ns/100ps
 `include "anids_defines.vh"
 

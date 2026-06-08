@@ -1,3 +1,4 @@
+// Purpose: verifies pipeline stage enable sequencing, fetch control, counter timing, and vector alignment.
 // ANIDS - Pipeline Manager Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"

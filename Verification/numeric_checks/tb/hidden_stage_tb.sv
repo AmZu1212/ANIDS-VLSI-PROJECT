@@ -1,3 +1,4 @@
+// Purpose: runs generated hidden-layer numeric cases and prints RTL hidden results for reference comparison.
 `timescale 1ns/100ps
 `include "anids_defines.vh"
 

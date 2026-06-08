@@ -1,3 +1,4 @@
+// Purpose: verifies full-address read/write behavior of the LUT RAM macro used by the lookup layer.
 // ANIDS - LUT RAM Read/Write Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"

@@ -1,3 +1,4 @@
+// Purpose: verifies RESULT_REG status encoding, write pulses, result hold time, and idle/waiting transitions.
 // ANIDS - Result Status Encoder Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"

@@ -1,3 +1,4 @@
+// Purpose: runs a dense full-core generated stress case through ANIDS and prints final RTL loss/outlier.
 `timescale 1ns/100ps
 `include "anids_defines.vh"
 

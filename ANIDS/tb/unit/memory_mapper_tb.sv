@@ -1,3 +1,4 @@
+// Purpose: verifies signed Q0.7 value to LUT-address mapping across the full 8-bit input range.
 // ANIDS - Memory Mapper Testbench
 `timescale 1ns/100ps
 `include "anids_defines.vh"
