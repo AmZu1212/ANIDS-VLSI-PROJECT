@@ -2,67 +2,97 @@
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-namespace {
+using namespace std;
 
-constexpr int DMA_VECTOR_WIDTH = 128;
-constexpr int HIDDEN_NEURON_COUNT = 64;
-constexpr int OUTPUT_NEURON_COUNT = 128;
-constexpr int Q07_WIDTH = 8;
-constexpr int HL_ACC_WIDTH = 15;
-constexpr int OL_ACC_WIDTH = 15;
-constexpr int LF_ACC_WIDTH = 15;
-constexpr int LUT_ADDR_WIDTH = 8;
+// ---------------------------------------------------------------------------
+// Design constants mirrored from ANIDS/anids_defines.vh
+// ---------------------------------------------------------------------------
 
+constexpr int dmaVectorWidth = 128;
+constexpr int hiddenNeuronCount = 64;
+constexpr int outputNeuronCount = 128;
+constexpr int q07Width = 8;
+constexpr int hiddenAccWidth = 15;
+constexpr int outputAccWidth = 15;
+constexpr int lossAccWidth = 15;
+constexpr int lutAddrWidth = 8;
+
+// Full programmable state needed by the model. All numeric model parameters are
+// stored as signed integer codes, not floating-point values. For Q0.7, a stored
+// value of 64 represents +0.5, and -128 represents -1.0.
 struct Config {
     int n = 128;
     int threshold = 0;
-    std::array<std::array<int, DMA_VECTOR_WIDTH>, HIDDEN_NEURON_COUNT> hidden_weights{};
-    std::array<int, HIDDEN_NEURON_COUNT> hidden_biases{};
-    std::array<std::array<int, HIDDEN_NEURON_COUNT>, OUTPUT_NEURON_COUNT> output_weights{};
-    std::array<int, OUTPUT_NEURON_COUNT> output_biases{};
-    std::array<int, 1 << LUT_ADDR_WIDTH> function_lut{};
+    array<array<int, dmaVectorWidth>, hiddenNeuronCount> hiddenWeights{};
+    array<int, hiddenNeuronCount> hiddenBiases{};
+    array<array<int, hiddenNeuronCount>, outputNeuronCount> outputWeights{};
+    array<int, outputNeuronCount> outputBiases{};
+    array<int, 1 << lutAddrWidth> functionLut{};
 };
 
-uint64_t mask_bits(int bits) {
-    if (bits >= 64) {
-        return UINT64_MAX;
-    }
-    return (uint64_t{1} << bits) - 1;
+struct InputVector {
+    uint64_t low = 0;
+    uint64_t high = 0;
+};
+
+// ---------------------------------------------------------------------------
+// Bit-accurate integer helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * @brief Return a mask with the requested number of low bits set.
+ */
+uint64_t MaskBits(int bits) {
+    return bits >= 64 ? UINT64_MAX : ((uint64_t{1} << bits) - 1);
 }
 
-int to_signed(int64_t value, int bits) {
-    uint64_t raw = static_cast<uint64_t>(value) & mask_bits(bits);
-    uint64_t sign_bit = uint64_t{1} << (bits - 1);
-    if (raw & sign_bit) {
+/**
+ * @brief Interpret the low bits of a value as a two's-complement integer.
+ */
+int ToSigned(int64_t value, int bits) {
+    const uint64_t raw = static_cast<uint64_t>(value) & MaskBits(bits);
+    const uint64_t signBit = uint64_t{1} << (bits - 1);
+    if (raw & signBit) {
         return static_cast<int>(static_cast<int64_t>(raw) - (int64_t{1} << bits));
     }
     return static_cast<int>(raw);
 }
 
-int wrap_signed(int64_t value, int bits) {
-    return to_signed(value, bits);
+/**
+ * @brief Wrap a value to a signed two's-complement width.
+ */
+int WrapSigned(int64_t value, int bits) {
+    return ToSigned(value, bits);
 }
 
-int wrap_unsigned(int64_t value, int bits) {
-    return static_cast<int>(static_cast<uint64_t>(value) & mask_bits(bits));
+/**
+ * @brief Wrap a value to an unsigned bit width.
+ */
+int WrapUnsigned(int64_t value, int bits) {
+    return static_cast<int>(static_cast<uint64_t>(value) & MaskBits(bits));
 }
 
-int trunc_slice_signed(int value, int in_bits, int msb, int width) {
-    uint64_t raw = static_cast<uint64_t>(value) & mask_bits(in_bits);
-    int lsb = msb - width + 1;
-    uint64_t sliced = (raw >> lsb) & mask_bits(width);
-    return to_signed(static_cast<int64_t>(sliced), width);
+/**
+ * @brief Model a SystemVerilog part-select followed by signed interpretation.
+ */
+int TruncSliceSigned(int value, int inBits, int msb, int width) {
+    const uint64_t raw = static_cast<uint64_t>(value) & MaskBits(inBits);
+    const int lsb = msb - width + 1;
+    const uint64_t sliced = (raw >> lsb) & MaskBits(width);
+    return ToSigned(static_cast<int64_t>(sliced), width);
 }
 
-int saturating_add_q07(int lhs, int rhs) {
-    int total = lhs + rhs;
+/**
+ * @brief Add two Q0.7 codes and saturate to the signed 8-bit range.
+ */
+int SaturatingAddQ07(int lhs, int rhs) {
+    const int total = lhs + rhs;
     if (total > 127) {
         return 127;
     }
@@ -72,30 +102,62 @@ int saturating_add_q07(int lhs, int rhs) {
     return total;
 }
 
-int relu_q07(int value) {
+/**
+ * @brief Apply ReLU to a signed Q0.7 code.
+ */
+int ReluQ07(int value) {
     return value > 0 ? value : 0;
 }
 
-int parse_int_token(const std::string &token) {
-    std::size_t idx = 0;
-    int base = 10;
-    if (token.size() > 2 && token[0] == '0' && (token[1] == 'x' || token[1] == 'X')) {
-        base = 16;
+// ---------------------------------------------------------------------------
+// Input parsing helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * @brief Remove comments from one input-file line.
+ */
+string TrimComment(const string &line) {
+    return line.substr(0, line.find('#'));
+}
+
+/**
+ * @brief Split an input-file line into whitespace-separated tokens.
+ */
+vector<string> SplitTokens(const string &line) {
+    istringstream iss(TrimComment(line));
+    vector<string> tokens;
+    string token;
+    while (iss >> token) {
+        tokens.push_back(token);
     }
-    int value = std::stoi(token, &idx, base);
-    if (idx != token.size()) {
-        throw std::runtime_error("bad integer token: " + token);
+    return tokens;
+}
+
+/**
+ * @brief Parse a decimal or 0x-prefixed integer token.
+ */
+int ParseIntToken(const string &token) {
+    size_t parsed = 0;
+    const int base = (token.size() > 2 && token[0] == '0' &&
+                     (token[1] == 'x' || token[1] == 'X')) ? 16 : 10;
+    const int value = stoi(token, &parsed, base);
+    if (parsed != token.size()) {
+        throw runtime_error("bad integer token: " + token);
     }
     return value;
 }
 
-unsigned __int128 parse_hex128(const std::string &token) {
-    std::string s = token;
-    if (s.size() > 2 && s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) {
-        s = s.substr(2);
+/**
+ * @brief Parse a 128-bit input vector written as hexadecimal text.
+ */
+InputVector ParseHex128(const string &token) {
+    string text = token;
+    if (text.size() > 2 && text[0] == '0' && (text[1] == 'x' || text[1] == 'X')) {
+        text = text.substr(2);
     }
-    unsigned __int128 value = 0;
-    for (char c : s) {
+
+    InputVector value;
+    for (char c : text) {
         int digit = 0;
         if (c >= '0' && c <= '9') {
             digit = c - '0';
@@ -104,128 +166,253 @@ unsigned __int128 parse_hex128(const std::string &token) {
         } else if (c >= 'A' && c <= 'F') {
             digit = c - 'A' + 10;
         } else {
-            throw std::runtime_error("bad hex vector token: " + token);
+            throw runtime_error("bad hex vector token: " + token);
         }
-        value = (value << 4) | static_cast<unsigned>(digit);
+        value.high = (value.high << 4) | (value.low >> 60);
+        value.low = (value.low << 4) | static_cast<uint64_t>(digit);
     }
     return value;
 }
 
-std::string trim_comment(const std::string &line) {
-    std::size_t pos = line.find('#');
-    return line.substr(0, pos);
-}
-
-std::vector<std::string> split_tokens(const std::string &line) {
-    std::istringstream iss(trim_comment(line));
-    std::vector<std::string> tokens;
-    std::string token;
-    while (iss >> token) {
-        tokens.push_back(token);
+/**
+ * @brief Read one bit from a 128-bit input vector.
+ */
+int GetInputBit(const InputVector &featureVector, int bitIndex) {
+    if (bitIndex < 0 || bitIndex >= dmaVectorWidth) {
+        return 0;
     }
-    return tokens;
+    if (bitIndex < 64) {
+        return static_cast<int>((featureVector.low >> bitIndex) & 1);
+    }
+    return static_cast<int>((featureVector.high >> (bitIndex - 64)) & 1);
 }
 
-int input_layer_pair(unsigned __int128 feature_vector, int counter) {
+// ---------------------------------------------------------------------------
+// RTL-equivalent datapath helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * @brief Select the two feature bits consumed at a given pipeline counter.
+ */
+int InputLayerPair(const InputVector &featureVector, int counter) {
     if (counter < 0) {
         return 0;
     }
-    int bit0 = static_cast<int>((feature_vector >> (counter * 2)) & 1);
-    int bit1 = static_cast<int>((feature_vector >> (counter * 2 + 1)) & 1);
+    const int bit0 = GetInputBit(featureVector, counter * 2);
+    const int bit1 = GetInputBit(featureVector, counter * 2 + 1);
     return (bit1 << 1) | bit0;
 }
 
-int memory_mapper(int in_value) {
-    int raw = wrap_unsigned(in_value, Q07_WIDTH);
-    int sign = (raw >> 7) & 1;
+/**
+ * @brief Convert a signed Q0.7 output value into the LUT address used by RTL.
+ */
+int MemoryMapper(int inValue) {
+    const int raw = WrapUnsigned(inValue, q07Width);
+    const int sign = (raw >> 7) & 1;
     return ((~sign & 1) << 7) | (raw & 0x7f);
 }
 
-int hidden_neuron_result(unsigned __int128 feature_vector, const std::array<int, DMA_VECTOR_WIDTH> &weights, int bias, int n) {
+/**
+ * @brief Compute one hidden-layer neuron's ReLU-clamped output.
+ */
+int HiddenNeuronResult(
+    const InputVector &featureVector,
+    const array<int, dmaVectorWidth> &weights,
+    int bias,
+    int n
+) {
     int acc = 0;
-    int last_pair_index = (n >> 1) - 1;
-    for (int counter = 0; counter <= last_pair_index; ++counter) {
-        int pair = input_layer_pair(feature_vector, counter - 1);
-        int gated0 = (pair & 1) ? weights[counter * 2] : 0;
-        int gated1 = (pair & 2) ? weights[counter * 2 + 1] : 0;
-        int pair_sum = wrap_signed(gated0 + gated1, 9);
-        int acc_next = wrap_signed(acc + pair_sum, HL_ACC_WIDTH);
-        if (counter == last_pair_index) {
-            int trunc8 = trunc_slice_signed(acc_next, HL_ACC_WIDTH, HL_ACC_WIDTH - 1, Q07_WIDTH);
-            return relu_q07(saturating_add_q07(trunc8, bias));
+    const int lastPairIndex = (n >> 1) - 1;
+
+    for (int counter = 0; counter <= lastPairIndex; ++counter) {
+        const int pair = InputLayerPair(featureVector, counter - 1);
+        const int gated0 = (pair & 1) ? weights[counter * 2] : 0;
+        const int gated1 = (pair & 2) ? weights[counter * 2 + 1] : 0;
+        const int pairSum = WrapSigned(gated0 + gated1, 9);
+        const int accNext = WrapSigned(acc + pairSum, hiddenAccWidth);
+
+        if (counter == lastPairIndex) {
+            const int trunc8 = TruncSliceSigned(accNext, hiddenAccWidth, hiddenAccWidth - 1, q07Width);
+            return ReluQ07(SaturatingAddQ07(trunc8, bias));
         }
-        acc = acc_next;
+
+        acc = accNext;
     }
-    throw std::runtime_error("invalid N: hidden loop did not run");
+
+    throw runtime_error("invalid N: hidden loop did not run");
 }
 
-int output_neuron_result(const std::array<int, HIDDEN_NEURON_COUNT> &hidden_results,
-                         const std::array<int, HIDDEN_NEURON_COUNT> &weights,
-                         int bias,
-                         int n) {
+/**
+ * @brief Compute one output-layer neuron's saturated Q0.7 output.
+ */
+int OutputNeuronResult(
+    const array<int, hiddenNeuronCount> &hiddenResults,
+    const array<int, hiddenNeuronCount> &weights,
+    int bias,
+    int n
+) {
     int acc = 0;
-    int last_step_index = (n >> 1) - 1;
-    for (int counter = 0; counter <= last_step_index; ++counter) {
-        int product_full = wrap_signed(hidden_results[counter] * weights[counter], 16);
-        int product_q07 = trunc_slice_signed(product_full, 16, 14, 8);
-        int acc_next = wrap_signed(acc + product_q07, OL_ACC_WIDTH);
-        if (counter == last_step_index) {
-            int trunc8 = trunc_slice_signed(acc_next, OL_ACC_WIDTH, OL_ACC_WIDTH - 1, Q07_WIDTH);
-            return saturating_add_q07(trunc8, bias);
+    const int lastStepIndex = (n >> 1) - 1;
+
+    for (int counter = 0; counter <= lastStepIndex; ++counter) {
+        const int productFull = WrapSigned(hiddenResults[counter] * weights[counter], 16);
+        const int productQ07 = TruncSliceSigned(productFull, 16, 14, 8);
+        const int accNext = WrapSigned(acc + productQ07, outputAccWidth);
+
+        if (counter == lastStepIndex) {
+            const int trunc8 = TruncSliceSigned(accNext, outputAccWidth, outputAccWidth - 1, q07Width);
+            return SaturatingAddQ07(trunc8, bias);
         }
-        acc = acc_next;
+
+        acc = accNext;
     }
-    throw std::runtime_error("invalid N: output loop did not run");
+
+    throw runtime_error("invalid N: output loop did not run");
 }
 
-int loss_result(unsigned __int128 feature_vector, const std::array<int, OUTPUT_NEURON_COUNT> &output_results, const Config &config) {
+/**
+ * @brief Accumulate the RTL loss function for one input vector.
+ */
+int LossResult(
+    const InputVector &featureVector,
+    const array<int, outputNeuronCount> &outputResults,
+    const Config &config
+) {
     int acc = 0;
-    int last_pair_index = (config.n >> 1) - 1;
-    for (int counter = 0; counter <= last_pair_index; ++counter) {
-        int pair = input_layer_pair(feature_vector, counter - 1);
-        int x0 = pair & 1;
-        int x1 = (pair >> 1) & 1;
-        int r0 = output_results[counter * 2];
-        int r1 = output_results[counter * 2 + 1];
-        int f0 = config.function_lut[memory_mapper(r0)];
-        int f1 = config.function_lut[memory_mapper(r1)];
-        int pair_sum = std::abs(x0 - f0) + std::abs(x1 - f1);
-        int acc_next = wrap_signed(acc + pair_sum, LF_ACC_WIDTH);
-        if (counter == last_pair_index) {
-            return trunc_slice_signed(acc_next, LF_ACC_WIDTH, LF_ACC_WIDTH - 1, Q07_WIDTH);
+    const int lastPairIndex = (config.n >> 1) - 1;
+
+    for (int counter = 0; counter <= lastPairIndex; ++counter) {
+        const int pair = InputLayerPair(featureVector, counter - 1);
+        const int x0 = pair & 1;
+        const int x1 = (pair >> 1) & 1;
+
+        const int r0 = outputResults[counter * 2];
+        const int r1 = outputResults[counter * 2 + 1];
+        const int f0 = config.functionLut[MemoryMapper(r0)];
+        const int f1 = config.functionLut[MemoryMapper(r1)];
+
+        const int pairSum = abs(x0 - f0) + abs(x1 - f1);
+        const int accNext = WrapSigned(acc + pairSum, lossAccWidth);
+
+        if (counter == lastPairIndex) {
+            return TruncSliceSigned(accNext, lossAccWidth, lossAccWidth - 1, q07Width);
         }
-        acc = acc_next;
+
+        acc = accNext;
     }
-    throw std::runtime_error("invalid N: loss loop did not run");
+
+    throw runtime_error("invalid N: loss loop did not run");
 }
 
-std::pair<int, int> run_model(unsigned __int128 feature_vector, const Config &config) {
-    std::array<int, HIDDEN_NEURON_COUNT> hidden{};
-    std::array<int, OUTPUT_NEURON_COUNT> output{};
+/**
+ * @brief Run the full ANIDS C++ model for one 128-bit input vector.
+ */
+pair<int, int> RunModel(const InputVector &featureVector, const Config &config) {
+    array<int, hiddenNeuronCount> hidden{};
+    array<int, outputNeuronCount> output{};
 
-    for (int i = 0; i < HIDDEN_NEURON_COUNT; ++i) {
-        hidden[i] = hidden_neuron_result(feature_vector, config.hidden_weights[i], config.hidden_biases[i], config.n);
-    }
-    for (int i = 0; i < OUTPUT_NEURON_COUNT; ++i) {
-        output[i] = output_neuron_result(hidden, config.output_weights[i], config.output_biases[i], config.n);
+    for (int i = 0; i < hiddenNeuronCount; ++i) {
+        hidden[i] = HiddenNeuronResult(
+            featureVector,
+            config.hiddenWeights[i],
+            config.hiddenBiases[i],
+            config.n
+        );
     }
 
-    int loss = loss_result(feature_vector, output, config);
-    int anomaly = loss > config.threshold ? 1 : 0;
+    for (int i = 0; i < outputNeuronCount; ++i) {
+        output[i] = OutputNeuronResult(
+            hidden,
+            config.outputWeights[i],
+            config.outputBiases[i],
+            config.n
+        );
+    }
+
+    const int loss = LossResult(featureVector, output, config);
+    const int anomaly = loss > config.threshold ? 1 : 0;
     return {loss, anomaly};
 }
 
-void load_loss_function(const std::string &path, Config &config) {
-    std::ifstream in(path);
+// ---------------------------------------------------------------------------
+// Test-file loaders
+// ---------------------------------------------------------------------------
+
+/**
+ * @brief Load N, hidden weights/biases, and output weights/biases.
+ */
+Config LoadWeights(const string &path) {
+    Config config;
+    ifstream in(path);
     if (!in) {
-        throw std::runtime_error("cannot open loss function file: " + path);
+        throw runtime_error("cannot open weights file: " + path);
     }
 
-    std::string line;
-    int line_no = 0;
-    while (std::getline(in, line)) {
-        ++line_no;
-        auto tokens = split_tokens(line);
+    string line;
+    int lineNo = 0;
+    while (getline(in, line)) {
+        ++lineNo;
+        const auto tokens = SplitTokens(line);
+        if (tokens.empty()) {
+            continue;
+        }
+
+        const string &kind = tokens[0];
+        try {
+            if (kind == "N") {
+                if (tokens.size() != 2) {
+                    throw runtime_error("N expects 1 value");
+                }
+                config.n = ParseIntToken(tokens[1]);
+            } else if (kind == "HLW") {
+                if (tokens.size() != 4) {
+                    throw runtime_error("HLW expects neuron feature value");
+                }
+                config.hiddenWeights.at(ParseIntToken(tokens[1])).at(ParseIntToken(tokens[2])) =
+                    ToSigned(ParseIntToken(tokens[3]), q07Width);
+            } else if (kind == "HLB") {
+                if (tokens.size() != 3) {
+                    throw runtime_error("HLB expects neuron value");
+                }
+                config.hiddenBiases.at(ParseIntToken(tokens[1])) =
+                    ToSigned(ParseIntToken(tokens[2]), q07Width);
+            } else if (kind == "OLW") {
+                if (tokens.size() != 4) {
+                    throw runtime_error("OLW expects neuron hidden_index value");
+                }
+                config.outputWeights.at(ParseIntToken(tokens[1])).at(ParseIntToken(tokens[2])) =
+                    ToSigned(ParseIntToken(tokens[3]), q07Width);
+            } else if (kind == "OLB") {
+                if (tokens.size() != 3) {
+                    throw runtime_error("OLB expects neuron value");
+                }
+                config.outputBiases.at(ParseIntToken(tokens[1])) =
+                    ToSigned(ParseIntToken(tokens[2]), q07Width);
+            } else {
+                throw runtime_error("unknown directive: " + kind);
+            }
+        } catch (const exception &e) {
+            throw runtime_error(path + ":" + to_string(lineNo) + ": " + e.what());
+        }
+    }
+
+    return config;
+}
+
+/**
+ * @brief Load LUT/function table entries from a loss_function.txt file.
+ */
+void LoadLossFunction(const string &path, Config &config) {
+    ifstream in(path);
+    if (!in) {
+        throw runtime_error("cannot open loss function file: " + path);
+    }
+
+    string line;
+    int lineNo = 0;
+    while (getline(in, line)) {
+        ++lineNo;
+        const auto tokens = SplitTokens(line);
         if (tokens.empty()) {
             continue;
         }
@@ -233,120 +420,86 @@ void load_loss_function(const std::string &path, Config &config) {
         try {
             if (tokens[0] == "LUT") {
                 if (tokens.size() != 3) {
-                    throw std::runtime_error("LUT expects address value");
+                    throw runtime_error("LUT expects address value");
                 }
-                config.function_lut.at(parse_int_token(tokens[1])) = to_signed(parse_int_token(tokens[2]), 8);
+                config.functionLut.at(ParseIntToken(tokens[1])) =
+                    ToSigned(ParseIntToken(tokens[2]), q07Width);
             } else {
                 if (tokens.size() != 2) {
-                    throw std::runtime_error("expected: LUT <address> <value> or <address> <value>");
+                    throw runtime_error("expected: LUT <address> <value> or <address> <value>");
                 }
-                config.function_lut.at(parse_int_token(tokens[0])) = to_signed(parse_int_token(tokens[1]), 8);
+                config.functionLut.at(ParseIntToken(tokens[0])) =
+                    ToSigned(ParseIntToken(tokens[1]), q07Width);
             }
-        } catch (const std::exception &e) {
-            throw std::runtime_error(path + ":" + std::to_string(line_no) + ": " + e.what());
+        } catch (const exception &e) {
+            throw runtime_error(path + ":" + to_string(lineNo) + ": " + e.what());
         }
     }
 }
 
-Config load_weights(const std::string &path) {
-    Config config;
-    std::ifstream in(path);
+/**
+ * @brief Load the signed Q0.7 anomaly threshold.
+ */
+int LoadThreshold(const string &path) {
+    ifstream in(path);
     if (!in) {
-        throw std::runtime_error("cannot open weights file: " + path);
+        throw runtime_error("cannot open threshold file: " + path);
     }
 
-    std::string line;
-    int line_no = 0;
-    while (std::getline(in, line)) {
-        ++line_no;
-        auto tokens = split_tokens(line);
-        if (tokens.empty()) {
-            continue;
-        }
-        const std::string &kind = tokens[0];
-        try {
-            if (kind == "N") {
-                if (tokens.size() != 2) throw std::runtime_error("N expects 1 value");
-                config.n = parse_int_token(tokens[1]);
-            } else if (kind == "HLW") {
-                if (tokens.size() != 4) throw std::runtime_error("HLW expects neuron feature value");
-                config.hidden_weights.at(parse_int_token(tokens[1])).at(parse_int_token(tokens[2])) =
-                    to_signed(parse_int_token(tokens[3]), 8);
-            } else if (kind == "HLB") {
-                if (tokens.size() != 3) throw std::runtime_error("HLB expects neuron value");
-                config.hidden_biases.at(parse_int_token(tokens[1])) = to_signed(parse_int_token(tokens[2]), 8);
-            } else if (kind == "OLW") {
-                if (tokens.size() != 4) throw std::runtime_error("OLW expects neuron hidden_index value");
-                config.output_weights.at(parse_int_token(tokens[1])).at(parse_int_token(tokens[2])) =
-                    to_signed(parse_int_token(tokens[3]), 8);
-            } else if (kind == "OLB") {
-                if (tokens.size() != 3) throw std::runtime_error("OLB expects neuron value");
-                config.output_biases.at(parse_int_token(tokens[1])) = to_signed(parse_int_token(tokens[2]), 8);
-            } else {
-                throw std::runtime_error("unknown directive: " + kind);
-            }
-        } catch (const std::exception &e) {
-            throw std::runtime_error(path + ":" + std::to_string(line_no) + ": " + e.what());
-        }
-    }
-
-    return config;
-}
-
-int load_threshold(const std::string &path) {
-    std::ifstream in(path);
-    if (!in) {
-        throw std::runtime_error("cannot open threshold file: " + path);
-    }
-    std::string token;
+    string token;
     in >> token;
     if (token.empty()) {
-        throw std::runtime_error("empty threshold file: " + path);
+        throw runtime_error("empty threshold file: " + path);
     }
-    return to_signed(parse_int_token(token), 8);
+
+    return ToSigned(ParseIntToken(token), q07Width);
 }
 
-std::vector<unsigned __int128> load_inputs(const std::string &path) {
-    std::ifstream in(path);
+/**
+ * @brief Load one or more 128-bit DMA input vectors.
+ */
+vector<InputVector> LoadInputs(const string &path) {
+    ifstream in(path);
     if (!in) {
-        throw std::runtime_error("cannot open inputs file: " + path);
+        throw runtime_error("cannot open inputs file: " + path);
     }
-    std::vector<unsigned __int128> inputs;
-    std::string line;
-    while (std::getline(in, line)) {
-        auto tokens = split_tokens(line);
+
+    vector<InputVector> inputs;
+    string line;
+    while (getline(in, line)) {
+        const auto tokens = SplitTokens(line);
         if (!tokens.empty()) {
-            inputs.push_back(parse_hex128(tokens[0]));
+            inputs.push_back(ParseHex128(tokens[0]));
         }
     }
+
     if (inputs.empty()) {
-        throw std::runtime_error("no input vectors in: " + path);
+        throw runtime_error("no input vectors in: " + path);
     }
+
     return inputs;
 }
 
-} // namespace
-
 int main(int argc, char **argv) {
     if (argc != 5) {
-        std::cerr << "Usage: anids_model <weights.txt> <threshold.txt> <loss_function.txt> <inputs.txt>\n";
+        cerr << "Usage: anids_model <weights.txt> <threshold.txt> <loss_function.txt> <inputs.txt>\n";
         return 2;
     }
 
     try {
-        Config config = load_weights(argv[1]);
-        config.threshold = load_threshold(argv[2]);
-        load_loss_function(argv[3], config);
-        auto inputs = load_inputs(argv[4]);
+        Config config = LoadWeights(argv[1]);
+        config.threshold = LoadThreshold(argv[2]);
+        LoadLossFunction(argv[3], config);
+        const auto inputs = LoadInputs(argv[4]);
 
-        for (std::size_t i = 0; i < inputs.size(); ++i) {
-            auto [loss, anomaly] = run_model(inputs[i], config);
-            std::cout << "RESULT vector=" << i
-                      << " loss=" << loss
-                      << " anomaly=" << anomaly << "\n";
+        for (size_t i = 0; i < inputs.size(); ++i) {
+            const auto [loss, anomaly] = RunModel(inputs[i], config);
+            cout << "RESULT vector=" << i
+                 << " loss=" << loss
+                 << " anomaly=" << anomaly << "\n";
         }
-    } catch (const std::exception &e) {
-        std::cerr << "error: " << e.what() << "\n";
+    } catch (const exception &e) {
+        cerr << "error: " << e.what() << "\n";
         return 1;
     }
 
