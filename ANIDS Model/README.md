@@ -115,8 +115,8 @@ RESULT vector=<index> loss=<signed_loss> anomaly=<0_or_1>
 
 | Test folder | Purpose |
 | --- | --- |
-| `zero_model_zeros` | Zero weights/biases, zero input vector, high threshold. Expected to exercise the non-anomaly path. |
-| `zero_model_ones` | Zero weights/biases, all-ones input vector, lower threshold. Expected to exercise the anomaly path. |
+| `zero_model_zeros` | Full-capacity model with an all-zero input vector and high threshold. |
+| `zero_model_ones` | Full-capacity model with an all-ones input vector and lower threshold. |
 | `sparse_directed_signed` | Directed sparse signed weights and biases. Exercises mixed signs, ReLU zeroing, LUT mapping, and thresholding. |
 | `dense_directed_signed` | Directed denser signed weights. Exercises stronger hidden/output activations and signed LUT behavior. |
 | `random_full_model_mixed` | Full-capacity model with all 16,384 weights explicitly programmed, 64 streamed vectors, and both anomaly and non-anomaly outputs. |
