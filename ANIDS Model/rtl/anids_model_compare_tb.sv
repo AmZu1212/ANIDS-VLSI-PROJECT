@@ -41,7 +41,7 @@ module anids_model_compare_tb;
 		.dma_data    (dma_data)
 	);
 
-	always #(`CLK_PERIOD/2) sys_clk = ~sys_clk;
+	always #(`CLK_PERIOD/2.0) sys_clk = ~sys_clk;
 
 	initial begin
 		if (!$value$plusargs("PROGRAM=%s", program_file))
