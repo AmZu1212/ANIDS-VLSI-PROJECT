@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parent
 SRC_DIR = ROOT / "ANIDS" / "src"
 TB_DIR = ROOT / "ANIDS" / "tb"
 OUT_BASENAME = "sim"
-OUT_DIR = ROOT / "outputs"
+OUT_DIR = ROOT / "Outputs"
 
 
 def usage() -> None:
