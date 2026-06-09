@@ -33,6 +33,7 @@ module two_vector_test_tb;
 	integer                       second_done_cycle;
 	integer                       first_result_cycle;
 	integer                       second_result_cycle;
+	wire [`APB_DATA_WIDTH-1:0]     result_reg_value;
 
 	anids_top dut (
 		.sys_clk     (sys_clk),
@@ -52,7 +53,9 @@ module two_vector_test_tb;
 		.dma_data    (dma_data)
 	);
 
-	always #(`CLK_PERIOD/2) sys_clk = ~sys_clk;
+	assign result_reg_value = dut.regfile_inst.regfile[`RESULT_REG];
+
+	always #(`CLK_PERIOD/2.0) sys_clk = ~sys_clk;
 
 	always @(posedge sys_clk or negedge sys_reset_n) begin
 		if (!sys_reset_n) begin
