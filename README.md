@@ -24,6 +24,7 @@ ANIDS-VLSI-PROJECT/
 |       |-- pipeline_timing_tb.sv
 |       `-- two_vector_test_tb.sv
 |-- ANIDS Model/
+|   |-- build/
 |   |-- cpp/
 |   |   `-- anids_model.cpp
 |   |-- rtl/
@@ -33,14 +34,14 @@ ANIDS-VLSI-PROJECT/
 |   |-- Results.md
 |   `-- run_test
 |-- Documentation/
-|   |-- anids_model.md
-|   |-- testbenches.md
+|   |-- ANIDS Model.md
+|   |-- Testbenches.md
 |   |-- Programmers Guide.md
-|   |-- LUT_Programming_Guide.md
-|   |-- block descriptions.md
-|   |-- main block descriptions.md
-|   |-- COMPILE_RESULTS.md
-|   `-- sigmoid_lut_table.csv
+|   |-- LUT Programming Guide.md
+|   |-- Main Block Descriptions.md
+|   |-- Sub Block Descriptions.md
+|   |-- Synthesis Results.md
+|   `-- sigmoid lut data.csv
 |-- TCL Scripts/
 |   |-- load_ddc.tcl
 |   |-- load_design.tcl
@@ -143,7 +144,7 @@ RTL testbenches are located under `ANIDS/tb`.
 See the detailed testbench documentation:
 
 ```text
-Documentation/testbenches.md
+Documentation/Testbenches.md
 ```
 
 ## C++ Model Comparison
@@ -189,7 +190,7 @@ The current RTL vs. C++ comparison suite includes:
 Detailed model documentation:
 
 ```text
-Documentation/anids_model.md
+Documentation/ANIDS Model.md
 ANIDS Model/Guide.md
 ANIDS Model/Results.md
 ```
@@ -200,14 +201,14 @@ The main documentation files are under `Documentation/`.
 
 | File | Purpose |
 | --- | --- |
-| `Documentation/testbenches.md` | Detailed explanation of RTL unit, integration, and system testbenches. |
-| `Documentation/anids_model.md` | Detailed explanation of the C++ model, test structure, runner, and RTL comparison bench. |
+| `Documentation/Testbenches.md` | Detailed explanation of RTL unit, integration, and system testbenches. |
+| `Documentation/ANIDS Model.md` | Detailed explanation of the C++ model, test structure, runner, and RTL comparison bench. |
 | `Documentation/Programmers Guide.md` | Register/programming-oriented design documentation. |
-| `Documentation/LUT_Programming_Guide.md` | LUT programming details. |
-| `Documentation/block descriptions.md` | Block-level design descriptions. |
-| `Documentation/main block descriptions.md` | High-level block descriptions. |
-| `Documentation/COMPILE_RESULTS.md` | Compile/synthesis-related notes. |
-| `Documentation/sigmoid_lut_table.csv` | LUT table data used by tests. |
+| `Documentation/LUT Programming Guide.md` | LUT programming details. |
+| `Documentation/Sub Block Descriptions.md` | Block-level design descriptions. |
+| `Documentation/Main Block Descriptions.md` | High-level block descriptions. |
+| `Documentation/Synthesis Results.md` | Compile/synthesis-related notes. |
+| `Documentation/sigmoid lut data.csv` | LUT table data used by tests. |
 
 ## Tool Requirements
 
