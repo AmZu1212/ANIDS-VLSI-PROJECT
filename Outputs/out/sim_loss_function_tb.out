@@ -1,0 +1,707 @@
+#! /c/Source/iverilog-install/bin/vvp
+:ivl_version "12.0 (devel)" "(s20150603-1539-g2693dd32b)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision - 10;
+:vpi_module "C:\iverilog\lib\ivl\system.vpi";
+:vpi_module "C:\iverilog\lib\ivl\vhdl_sys.vpi";
+:vpi_module "C:\iverilog\lib\ivl\vhdl_textio.vpi";
+:vpi_module "C:\iverilog\lib\ivl\v2005_math.vpi";
+:vpi_module "C:\iverilog\lib\ivl\va_math.vpi";
+:vpi_module "C:\iverilog\lib\ivl\v2009.vpi";
+S_00000297024ce910 .scope package, "$unit" "$unit" 2 1;
+ .timescale 0 0;
+S_000002970258c6a0 .scope module, "loss_function_tb" "loss_function_tb" 3 6;
+ .timescale -9 -10;
+P_00000297025c9300 .param/l "COUNTER_WIDTH" 1 3 11, +C4<00000000000000000000000000000111>;
+P_00000297025c9338 .param/l "FEATURE_PAIR_WIDTH" 1 3 8, +C4<00000000000000000000000000000010>;
+P_00000297025c9370 .param/l "RESULT_IN_WIDTH" 1 3 9, +C4<00000000000000000000000000001000>;
+P_00000297025c93a8 .param/l "RESULT_WIDTH" 1 3 10, +C4<00000000000000000000000000001000>;
+v00000297026152d0_0 .var "N", 7 0;
+v0000029702613610_0 .var/i "acc_model", 31 0;
+v0000029702614510_0 .var "clk", 0 0;
+v0000029702614e70_0 .var "counter", 6 0;
+v0000029702614b50_0 .var "enable", 0 0;
+v0000029702614d30_0 .var/s "function_0", 7 0;
+v0000029702613c50_0 .var/s "function_1", 7 0;
+v0000029702613750_0 .net "ready", 0 0, v0000029702613cf0_0;  1 drivers
+v0000029702614f10_0 .var "resetN", 0 0;
+v0000029702613e30_0 .net/s "result", 7 0, v0000029702614970_0;  1 drivers
+v0000029702614470_0 .var "x_in", 1 0;
+S_000002970258c830 .scope function.vec4.u32, "abs_int" "abs_int" 3 197, 3 197 0, S_000002970258c6a0;
+ .timescale -9 -10;
+; Variable abs_int is vec4 return value of scope S_000002970258c830
+v00000297025c7d70_0 .var/i "value", 31 0;
+TD_loss_function_tb.abs_int ;
+    %load/vec4 v00000297025c7d70_0;
+    %cmpi/s 0, 0, 32;
+    %jmp/0xz  T_0.0, 5;
+    %load/vec4 v00000297025c7d70_0;
+    %inv;
+    %pushi/vec4 1, 0, 32;
+    %add;
+    %ret/vec4 0, 0, 32;  Assign to abs_int (store_vec4_to_lval)
+    %jmp T_0.1;
+T_0.0 ;
+    %load/vec4 v00000297025c7d70_0;
+    %ret/vec4 0, 0, 32;  Assign to abs_int (store_vec4_to_lval)
+T_0.1 ;
+    %end;
+S_00000297025930a0 .scope task, "check_outputs" "check_outputs" 3 225, 3 225 0, S_000002970258c6a0;
+ .timescale -9 -10;
+v00000297025c74b0_0 .var "expected_ready", 0 0;
+v00000297025c7e10_0 .var/s "expected_result", 7 0;
+v00000297025c7690_0 .var "test_name", 255 0;
+TD_loss_function_tb.check_outputs ;
+    %load/vec4 v0000029702613750_0;
+    %load/vec4 v00000297025c74b0_0;
+    %cmp/ne;
+    %jmp/1 T_1.4, 6;
+    %flag_mov 8, 6;
+    %load/vec4 v0000029702613e30_0;
+    %load/vec4 v00000297025c7e10_0;
+    %cmp/ne;
+    %flag_or 6, 8;
+T_1.4;
+    %jmp/0xz  T_1.2, 6;
+    %vpi_call/w 3 232 "$error", "FAIL: %0s | ready=%0b expected_ready=%0b result=%0d expected_result=%0d", v00000297025c7690_0, v0000029702613750_0, v00000297025c74b0_0, v0000029702613e30_0, v00000297025c7e10_0 {0 0 0};
+    %vpi_call/w 3 234 "$finish" {0 0 0};
+    %jmp T_1.3;
+T_1.2 ;
+    %vpi_call/w 3 237 "$display", "PASS: %0s", v00000297025c7690_0 {0 0 0};
+T_1.3 ;
+    %end;
+S_0000029702593230 .scope module, "dut" "loss_function" 3 26, 4 4 0, S_000002970258c6a0;
+ .timescale -9 -10;
+    .port_info 0 /INPUT 1 "clk";
+    .port_info 1 /INPUT 1 "resetN";
+    .port_info 2 /INPUT 1 "enable";
+    .port_info 3 /INPUT 8 "N";
+    .port_info 4 /INPUT 7 "counter";
+    .port_info 5 /INPUT 2 "x_in";
+    .port_info 6 /INPUT 8 "function_0";
+    .port_info 7 /INPUT 8 "function_1";
+    .port_info 8 /OUTPUT 8 "result";
+    .port_info 9 /OUTPUT 1 "ready";
+P_0000029702572510 .param/l "ABS_WIDTH" 0 4 21, +C4<00000000000000000000000000001000>;
+P_0000029702572548 .param/l "ACC_WIDTH" 0 4 23, +C4<00000000000000000000000000001111>;
+P_0000029702572580 .param/l "COUNTER_WIDTH" 0 4 20, +C4<00000000000000000000000000000111>;
+P_00000297025725b8 .param/l "FEATURE_PAIR_WIDTH" 0 4 17, +C4<00000000000000000000000000000010>;
+P_00000297025725f0 .param/l "PAIR_SUM_WIDTH" 0 4 22, +C4<00000000000000000000000000001001>;
+P_0000029702572628 .param/l "RESULT_IN_WIDTH" 0 4 18, +C4<00000000000000000000000000001000>;
+P_0000029702572660 .param/l "RESULT_WIDTH" 0 4 19, +C4<00000000000000000000000000001000>;
+v00000297025c89f0_0 .net "N", 7 0, v00000297026152d0_0;  1 drivers
+v00000297025c7ff0_0 .net *"_ivl_0", 7 0, L_0000029702613ed0;  1 drivers
+v00000297025c72d0_0 .net *"_ivl_13", 0 0, L_00000297026136b0;  1 drivers
+L_0000029702615528 .functor BUFT 1, C4<000000001>, C4<0>, C4<0>, C4<0>;
+v00000297025c7af0_0 .net/2s *"_ivl_14", 8 0, L_0000029702615528;  1 drivers
+L_0000029702615570 .functor BUFT 1, C4<000000000>, C4<0>, C4<0>, C4<0>;
+v00000297025c7730_0 .net/2s *"_ivl_16", 8 0, L_0000029702615570;  1 drivers
+v00000297025c7c30_0 .net *"_ivl_2", 6 0, L_00000297026146f0;  1 drivers
+v00000297025c8a90_0 .net *"_ivl_21", 0 0, L_00000297026137f0;  1 drivers
+L_00000297026155b8 .functor BUFT 1, C4<000000001>, C4<0>, C4<0>, C4<0>;
+v00000297025c7230_0 .net/2s *"_ivl_22", 8 0, L_00000297026155b8;  1 drivers
+L_0000029702615600 .functor BUFT 1, C4<000000000>, C4<0>, C4<0>, C4<0>;
+v00000297025c7870_0 .net/2s *"_ivl_24", 8 0, L_0000029702615600;  1 drivers
+v00000297025c7370_0 .net *"_ivl_29", 0 0, L_0000029702613570;  1 drivers
+v00000297025c8090_0 .net *"_ivl_33", 0 0, L_0000029702615050;  1 drivers
+L_0000029702615498 .functor BUFT 1, C4<0>, C4<0>, C4<0>, C4<0>;
+v00000297025c8e50_0 .net *"_ivl_4", 0 0, L_0000029702615498;  1 drivers
+v00000297025c7410_0 .net *"_ivl_41", 0 0, L_0000029702614330;  1 drivers
+L_0000029702615648 .functor BUFT 1, C4<000000000>, C4<0>, C4<0>, C4<0>;
+v00000297025c8b30_0 .net *"_ivl_42", 8 0, L_0000029702615648;  1 drivers
+v00000297025c8d10_0 .net *"_ivl_45", 8 0, L_0000029702613a70;  1 drivers
+v00000297025c8810_0 .net *"_ivl_46", 8 0, L_0000029702614a10;  1 drivers
+v00000297025c7550_0 .net *"_ivl_51", 0 0, L_0000029702614010;  1 drivers
+L_0000029702615690 .functor BUFT 1, C4<000000000>, C4<0>, C4<0>, C4<0>;
+v00000297025c86d0_0 .net *"_ivl_52", 8 0, L_0000029702615690;  1 drivers
+v00000297025c8950_0 .net *"_ivl_55", 8 0, L_00000297026148d0;  1 drivers
+v00000297025c8db0_0 .net *"_ivl_56", 8 0, L_00000297026145b0;  1 drivers
+L_00000297026154e0 .functor BUFT 1, C4<00000001>, C4<0>, C4<0>, C4<0>;
+v00000297025c83b0_0 .net/2u *"_ivl_6", 7 0, L_00000297026154e0;  1 drivers
+v00000297025c77d0_0 .net *"_ivl_60", 8 0, L_0000029702614ab0;  1 drivers
+L_00000297026156d8 .functor BUFT 1, C4<0>, C4<0>, C4<0>, C4<0>;
+v00000297025c8130_0 .net *"_ivl_63", 0 0, L_00000297026156d8;  1 drivers
+v00000297025c8ef0_0 .net *"_ivl_64", 8 0, L_000002970266e360;  1 drivers
+L_0000029702615720 .functor BUFT 1, C4<0>, C4<0>, C4<0>, C4<0>;
+v00000297025c7eb0_0 .net *"_ivl_67", 0 0, L_0000029702615720;  1 drivers
+L_0000029702615768 .functor BUFT 1, C4<000000>, C4<0>, C4<0>, C4<0>;
+v00000297025c81d0_0 .net/2u *"_ivl_70", 5 0, L_0000029702615768;  1 drivers
+v00000297025c8450_0 .net *"_ivl_72", 14 0, L_000002970266e4a0;  1 drivers
+v00000297025c7050_0 .net *"_ivl_8", 7 0, L_0000029702614bf0;  1 drivers
+v00000297025c70f0_0 .net "abs_0", 7 0, L_0000029702613b10;  1 drivers
+v00000297025c8270_0 .net "abs_1", 7 0, L_0000029702613f70;  1 drivers
+v00000297025c7f50_0 .var/s "acc", 14 0;
+v00000297025c79b0_0 .net/s "acc_next", 14 0, L_000002970266d5a0;  1 drivers
+v00000297025c7910_0 .net "clk", 0 0, v0000029702614510_0;  1 drivers
+v00000297025c88b0_0 .net "counter", 6 0, v0000029702614e70_0;  1 drivers
+v00000297025c7a50_0 .net/s "delta_0", 8 0, L_0000029702613930;  1 drivers
+v00000297025c8310_0 .net/s "delta_1", 8 0, L_00000297026139d0;  1 drivers
+v00000297025c8770_0 .net "enable", 0 0, v0000029702614b50_0;  1 drivers
+v00000297025c84f0_0 .net/s "function_0", 7 0, v0000029702614d30_0;  1 drivers
+v00000297025c8590_0 .net/s "function_1", 7 0, v0000029702613c50_0;  1 drivers
+v00000297025c8630_0 .net "last_pair_index", 6 0, L_0000029702615230;  1 drivers
+v00000297025c8bd0_0 .net "pair_sum", 8 0, L_000002970266e400;  1 drivers
+v00000297025c8c70_0 .net/s "r0_ext", 8 0, L_00000297026141f0;  1 drivers
+v00000297025c7190_0 .net/s "r1_ext", 8 0, L_0000029702613890;  1 drivers
+v0000029702613cf0_0 .var "ready", 0 0;
+v0000029702614fb0_0 .net "resetN", 0 0, v0000029702614f10_0;  1 drivers
+v0000029702614970_0 .var/s "result", 7 0;
+v0000029702614830_0 .net/s "trunc8", 7 0, L_000002970266d640;  1 drivers
+v0000029702614dd0_0 .net/s "x0_ext", 8 0, L_0000029702615370;  1 drivers
+v0000029702614790_0 .net/s "x1_ext", 8 0, L_00000297026134d0;  1 drivers
+v0000029702613d90_0 .net "x_in", 1 0, v0000029702614470_0;  1 drivers
+E_00000297025a7a20/0 .event negedge, v0000029702614fb0_0;
+E_00000297025a7a20/1 .event posedge, v00000297025c7910_0;
+E_00000297025a7a20 .event/or E_00000297025a7a20/0, E_00000297025a7a20/1;
+L_00000297026146f0 .part v00000297026152d0_0, 1, 7;
+L_0000029702613ed0 .concat [ 7 1 0 0], L_00000297026146f0, L_0000029702615498;
+L_0000029702614bf0 .arith/sub 8, L_0000029702613ed0, L_00000297026154e0;
+L_0000029702615230 .part L_0000029702614bf0, 0, 7;
+L_00000297026136b0 .part v0000029702614470_0, 0, 1;
+L_0000029702615370 .functor MUXZ 9, L_0000029702615570, L_0000029702615528, L_00000297026136b0, C4<>;
+L_00000297026137f0 .part v0000029702614470_0, 1, 1;
+L_00000297026134d0 .functor MUXZ 9, L_0000029702615600, L_00000297026155b8, L_00000297026137f0, C4<>;
+L_0000029702613570 .part v0000029702614d30_0, 7, 1;
+L_00000297026141f0 .concat [ 8 1 0 0], v0000029702614d30_0, L_0000029702613570;
+L_0000029702615050 .part v0000029702613c50_0, 7, 1;
+L_0000029702613890 .concat [ 8 1 0 0], v0000029702613c50_0, L_0000029702615050;
+L_0000029702613930 .arith/sub 9, L_0000029702615370, L_00000297026141f0;
+L_00000297026139d0 .arith/sub 9, L_00000297026134d0, L_0000029702613890;
+L_0000029702614330 .part L_0000029702613930, 8, 1;
+L_0000029702613a70 .arith/sub 9, L_0000029702615648, L_0000029702613930;
+L_0000029702614a10 .functor MUXZ 9, L_0000029702613930, L_0000029702613a70, L_0000029702614330, C4<>;
+L_0000029702613b10 .part L_0000029702614a10, 0, 8;
+L_0000029702614010 .part L_00000297026139d0, 8, 1;
+L_00000297026148d0 .arith/sub 9, L_0000029702615690, L_00000297026139d0;
+L_00000297026145b0 .functor MUXZ 9, L_00000297026139d0, L_00000297026148d0, L_0000029702614010, C4<>;
+L_0000029702613f70 .part L_00000297026145b0, 0, 8;
+L_0000029702614ab0 .concat [ 8 1 0 0], L_0000029702613b10, L_00000297026156d8;
+L_000002970266e360 .concat [ 8 1 0 0], L_0000029702613f70, L_0000029702615720;
+L_000002970266e400 .arith/sum 9, L_0000029702614ab0, L_000002970266e360;
+L_000002970266e4a0 .concat [ 9 6 0 0], L_000002970266e400, L_0000029702615768;
+L_000002970266d5a0 .arith/sum 15, v00000297025c7f50_0, L_000002970266e4a0;
+L_000002970266d640 .part L_000002970266d5a0, 7, 8;
+S_0000029702560430 .scope function.vec4.u32, "model_pair_loss" "model_pair_loss" 3 207, 3 207 0, S_000002970258c6a0;
+ .timescale -9 -10;
+; Variable model_pair_loss is vec4 return value of scope S_0000029702560430
+v0000029702614290_0 .var/s "pair_f0", 7 0;
+v00000297026150f0_0 .var/s "pair_f1", 7 0;
+v00000297026143d0_0 .var "pair_x", 1 0;
+TD_loss_function_tb.model_pair_loss ;
+    %load/vec4 v00000297026143d0_0;
+    %parti/s 1, 0, 2;
+    %flag_set/vec4 8;
+    %jmp/0 T_2.5, 8;
+    %pushi/vec4 1, 0, 32;
+    %jmp/1 T_2.6, 8;
+T_2.5 ; End of true expr.
+    %pushi/vec4 0, 0, 32;
+    %jmp/0 T_2.6, 8;
+ ; End of false expr.
+    %blend;
+T_2.6;
+    %load/vec4 v0000029702614290_0;
+    %pad/s 32;
+    %sub;
+    %store/vec4 v00000297025c7d70_0, 0, 32;
+    %callf/vec4 TD_loss_function_tb.abs_int, S_000002970258c830;
+    %load/vec4 v00000297026143d0_0;
+    %parti/s 1, 1, 2;
+    %flag_set/vec4 8;
+    %jmp/0 T_2.7, 8;
+    %pushi/vec4 1, 0, 32;
+    %jmp/1 T_2.8, 8;
+T_2.7 ; End of true expr.
+    %pushi/vec4 0, 0, 32;
+    %jmp/0 T_2.8, 8;
+ ; End of false expr.
+    %blend;
+T_2.8;
+    %load/vec4 v00000297026150f0_0;
+    %pad/s 32;
+    %sub;
+    %store/vec4 v00000297025c7d70_0, 0, 32;
+    %callf/vec4 TD_loss_function_tb.abs_int, S_000002970258c830;
+    %add;
+    %ret/vec4 0, 0, 32;  Assign to model_pair_loss (store_vec4_to_lval)
+    %end;
+S_00000297025605c0 .scope task, "reset_runtime_only" "reset_runtime_only" 3 184, 3 184 0, S_000002970258c6a0;
+ .timescale -9 -10;
+E_00000297025a7520 .event posedge, v00000297025c7910_0;
+TD_loss_function_tb.reset_runtime_only ;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000029702614b50_0, 0, 1;
+    %pushi/vec4 0, 0, 7;
+    %store/vec4 v0000029702614e70_0, 0, 7;
+    %pushi/vec4 0, 0, 2;
+    %store/vec4 v0000029702614470_0, 0, 2;
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v0000029702614d30_0, 0, 8;
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v0000029702613c50_0, 0, 8;
+    %pushi/vec4 0, 0, 32;
+    %store/vec4 v0000029702613610_0, 0, 32;
+    %wait E_00000297025a7520;
+    %delay 20, 0;
+    %end;
+S_000002970255dc30 .scope task, "run_disable_clears_accumulator_test" "run_disable_clears_accumulator_test" 3 150, 3 150 0, S_000002970258c6a0;
+ .timescale -9 -10;
+TD_loss_function_tb.run_disable_clears_accumulator_test ;
+    %vpi_call/w 3 152 "$display", "SECTION: disable clears accumulator" {0 0 0};
+    %fork TD_loss_function_tb.reset_runtime_only, S_00000297025605c0;
+    %join;
+    %pushi/vec4 4, 0, 8;
+    %store/vec4 v00000297026152d0_0, 0, 8;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0000029702614b50_0, 0, 1;
+    %pushi/vec4 0, 0, 7;
+    %store/vec4 v0000029702614e70_0, 0, 7;
+    %pushi/vec4 3, 0, 2;
+    %store/vec4 v0000029702614470_0, 0, 2;
+    %pushi/vec4 32, 0, 8;
+    %store/vec4 v0000029702614d30_0, 0, 8;
+    %pushi/vec4 32, 0, 8;
+    %store/vec4 v0000029702613c50_0, 0, 8;
+    %wait E_00000297025a7520;
+    %delay 20, 0;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v00000297025c74b0_0, 0, 1;
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v00000297025c7e10_0, 0, 8;
+    %pushi/vec4 3535984704, 0, 33;
+    %concati/vec4 3267806954, 0, 32;
+    %concati/vec4 3672824002, 0, 32;
+    %concati/vec4 3906133724, 0, 32;
+    %concati/vec4 2177749413, 0, 33;
+    %concati/vec4 2981134777, 0, 32;
+    %concati/vec4 3184558537, 0, 32;
+    %concati/vec4 627139705, 0, 30;
+    %store/vec4 v00000297025c7690_0, 0, 256;
+    %fork TD_loss_function_tb.check_outputs, S_00000297025930a0;
+    %join;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000029702614b50_0, 0, 1;
+    %wait E_00000297025a7520;
+    %delay 20, 0;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v00000297025c74b0_0, 0, 1;
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v00000297025c7e10_0, 0, 8;
+    %pushi/vec4 3637133510, 0, 33;
+    %concati/vec4 3637166820, 0, 32;
+    %concati/vec4 3863007964, 0, 32;
+    %concati/vec4 3046748581, 0, 33;
+    %concati/vec4 2644627585, 0, 32;
+    %concati/vec4 2240646613, 0, 32;
+    %concati/vec4 3050680709, 0, 32;
+    %concati/vec4 879325038, 0, 30;
+    %store/vec4 v00000297025c7690_0, 0, 256;
+    %fork TD_loss_function_tb.check_outputs, S_00000297025930a0;
+    %join;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0000029702614b50_0, 0, 1;
+    %pushi/vec4 2, 0, 8;
+    %store/vec4 v00000297026152d0_0, 0, 8;
+    %pushi/vec4 0, 0, 7;
+    %store/vec4 v0000029702614e70_0, 0, 7;
+    %pushi/vec4 1, 0, 2;
+    %store/vec4 v0000029702614470_0, 0, 2;
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v0000029702614d30_0, 0, 8;
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v0000029702613c50_0, 0, 8;
+    %wait E_00000297025a7520;
+    %delay 20, 0;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v00000297025c74b0_0, 0, 1;
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v00000297025c7e10_0, 0, 8;
+    %pushi/vec4 2173277597, 0, 34;
+    %concati/vec4 2780417153, 0, 32;
+    %concati/vec4 2580135348, 0, 32;
+    %concati/vec4 2172944781, 0, 32;
+    %concati/vec4 2979366328, 0, 32;
+    %concati/vec4 2173013389, 0, 32;
+    %concati/vec4 3585463729, 0, 32;
+    %concati/vec4 561278834, 0, 30;
+    %store/vec4 v00000297025c7690_0, 0, 256;
+    %fork TD_loss_function_tb.check_outputs, S_00000297025930a0;
+    %join;
+    %end;
+S_000002970255ddc0 .scope task, "run_negative_function_test" "run_negative_function_test" 3 129, 3 129 0, S_000002970258c6a0;
+ .timescale -9 -10;
+v0000029702614c90_0 .var/i "expected", 31 0;
+TD_loss_function_tb.run_negative_function_test ;
+    %vpi_call/w 3 132 "$display", "SECTION: signed looked-up values" {0 0 0};
+    %fork TD_loss_function_tb.reset_runtime_only, S_00000297025605c0;
+    %join;
+    %pushi/vec4 2, 0, 8;
+    %store/vec4 v00000297026152d0_0, 0, 8;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0000029702614b50_0, 0, 1;
+    %pushi/vec4 0, 0, 7;
+    %store/vec4 v0000029702614e70_0, 0, 7;
+    %pushi/vec4 0, 0, 2;
+    %store/vec4 v0000029702614470_0, 0, 2;
+    %pushi/vec4 224, 0, 8;
+    %store/vec4 v0000029702614d30_0, 0, 8;
+    %pushi/vec4 192, 0, 8;
+    %store/vec4 v0000029702613c50_0, 0, 8;
+    %load/vec4 v0000029702614470_0;
+    %load/vec4 v0000029702614d30_0;
+    %load/vec4 v0000029702613c50_0;
+    %store/vec4 v00000297026150f0_0, 0, 8;
+    %store/vec4 v0000029702614290_0, 0, 8;
+    %store/vec4 v00000297026143d0_0, 0, 2;
+    %callf/vec4 TD_loss_function_tb.model_pair_loss, S_0000029702560430;
+    %store/vec4 v0000029702614150_0, 0, 32;
+    %callf/vec4 TD_loss_function_tb.trunc8_value, S_0000029702555af0;
+    %store/vec4 v0000029702614c90_0, 0, 32;
+    %wait E_00000297025a7520;
+    %delay 20, 0;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v00000297025c74b0_0, 0, 1;
+    %load/vec4 v0000029702614c90_0;
+    %parti/s 8, 0, 2;
+    %store/vec4 v00000297025c7e10_0, 0, 8;
+    %pushi/vec4 3639266022, 0, 33;
+    %concati/vec4 2173028756, 0, 33;
+    %concati/vec4 2177738141, 0, 32;
+    %concati/vec4 3098908129, 0, 32;
+    %concati/vec4 3516250513, 0, 32;
+    %concati/vec4 2509275533, 0, 32;
+    %concati/vec4 3184118165, 0, 32;
+    %concati/vec4 594832505, 0, 30;
+    %store/vec4 v00000297025c7690_0, 0, 256;
+    %fork TD_loss_function_tb.check_outputs, S_00000297025930a0;
+    %join;
+    %end;
+S_0000029702557790 .scope task, "run_single_pair_test" "run_single_pair_test" 3 72, 3 72 0, S_000002970258c6a0;
+ .timescale -9 -10;
+v0000029702615190_0 .var/i "expected", 31 0;
+TD_loss_function_tb.run_single_pair_test ;
+    %vpi_call/w 3 75 "$display", "SECTION: single pair" {0 0 0};
+    %fork TD_loss_function_tb.reset_runtime_only, S_00000297025605c0;
+    %join;
+    %pushi/vec4 2, 0, 8;
+    %store/vec4 v00000297026152d0_0, 0, 8;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0000029702614b50_0, 0, 1;
+    %pushi/vec4 0, 0, 7;
+    %store/vec4 v0000029702614e70_0, 0, 7;
+    %pushi/vec4 1, 0, 2;
+    %store/vec4 v0000029702614470_0, 0, 2;
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v0000029702614d30_0, 0, 8;
+    %pushi/vec4 1, 0, 8;
+    %store/vec4 v0000029702613c50_0, 0, 8;
+    %load/vec4 v0000029702614470_0;
+    %load/vec4 v0000029702614d30_0;
+    %load/vec4 v0000029702613c50_0;
+    %store/vec4 v00000297026150f0_0, 0, 8;
+    %store/vec4 v0000029702614290_0, 0, 8;
+    %store/vec4 v00000297026143d0_0, 0, 2;
+    %callf/vec4 TD_loss_function_tb.model_pair_loss, S_0000029702560430;
+    %store/vec4 v0000029702614150_0, 0, 32;
+    %callf/vec4 TD_loss_function_tb.trunc8_value, S_0000029702555af0;
+    %store/vec4 v0000029702615190_0, 0, 32;
+    %wait E_00000297025a7520;
+    %delay 20, 0;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v00000297025c74b0_0, 0, 1;
+    %load/vec4 v0000029702615190_0;
+    %parti/s 8, 0, 2;
+    %store/vec4 v00000297025c7e10_0, 0, 8;
+    %pushi/vec4 0, 0, 32; draw_string_vec4
+    %pushi/vec4 29545, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1852271717, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 544235881, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1914729061, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1937075316, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 544039284, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1667786099, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %store/vec4 v00000297025c7690_0, 0, 256;
+    %fork TD_loss_function_tb.check_outputs, S_00000297025930a0;
+    %join;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000029702614b50_0, 0, 1;
+    %wait E_00000297025a7520;
+    %delay 20, 0;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v00000297025c74b0_0, 0, 1;
+    %load/vec4 v0000029702615190_0;
+    %parti/s 8, 0, 2;
+    %store/vec4 v00000297025c7e10_0, 0, 8;
+    %pushi/vec4 0, 0, 32; draw_string_vec4
+    %pushi/vec4 29285, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1937075316, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 543715180, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1685266529, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1718904178, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 543451507, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1633840229, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %store/vec4 v00000297025c7690_0, 0, 256;
+    %fork TD_loss_function_tb.check_outputs, S_00000297025930a0;
+    %join;
+    %end;
+S_0000029702557920 .scope task, "run_two_pair_accumulation_test" "run_two_pair_accumulation_test" 3 98, 3 98 0, S_000002970258c6a0;
+ .timescale -9 -10;
+v0000029702613bb0_0 .var/i "expected", 31 0;
+TD_loss_function_tb.run_two_pair_accumulation_test ;
+    %vpi_call/w 3 101 "$display", "SECTION: two-pair accumulation" {0 0 0};
+    %fork TD_loss_function_tb.reset_runtime_only, S_00000297025605c0;
+    %join;
+    %pushi/vec4 4, 0, 8;
+    %store/vec4 v00000297026152d0_0, 0, 8;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0000029702614b50_0, 0, 1;
+    %pushi/vec4 0, 0, 7;
+    %store/vec4 v0000029702614e70_0, 0, 7;
+    %pushi/vec4 3, 0, 2;
+    %store/vec4 v0000029702614470_0, 0, 2;
+    %pushi/vec4 224, 0, 8;
+    %store/vec4 v0000029702614d30_0, 0, 8;
+    %pushi/vec4 20, 0, 8;
+    %store/vec4 v0000029702613c50_0, 0, 8;
+    %load/vec4 v0000029702614470_0;
+    %load/vec4 v0000029702614d30_0;
+    %load/vec4 v0000029702613c50_0;
+    %store/vec4 v00000297026150f0_0, 0, 8;
+    %store/vec4 v0000029702614290_0, 0, 8;
+    %store/vec4 v00000297026143d0_0, 0, 2;
+    %callf/vec4 TD_loss_function_tb.model_pair_loss, S_0000029702560430;
+    %store/vec4 v0000029702613610_0, 0, 32;
+    %wait E_00000297025a7520;
+    %delay 20, 0;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v00000297025c74b0_0, 0, 1;
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v00000297025c7e10_0, 0, 8;
+    %pushi/vec4 3896565954, 0, 33;
+    %concati/vec4 3538174146, 0, 32;
+    %concati/vec4 3334925018, 0, 32;
+    %concati/vec4 3940074216, 0, 32;
+    %concati/vec4 3404087534, 0, 32;
+    %concati/vec4 3538473182, 0, 32;
+    %concati/vec4 3941089508, 0, 32;
+    %concati/vec4 1700881529, 0, 31;
+    %store/vec4 v00000297025c7690_0, 0, 256;
+    %fork TD_loss_function_tb.check_outputs, S_00000297025930a0;
+    %join;
+    %pushi/vec4 1, 0, 7;
+    %store/vec4 v0000029702614e70_0, 0, 7;
+    %pushi/vec4 2, 0, 2;
+    %store/vec4 v0000029702614470_0, 0, 2;
+    %pushi/vec4 64, 0, 8;
+    %store/vec4 v0000029702614d30_0, 0, 8;
+    %pushi/vec4 192, 0, 8;
+    %store/vec4 v0000029702613c50_0, 0, 8;
+    %load/vec4 v0000029702613610_0;
+    %load/vec4 v0000029702614470_0;
+    %load/vec4 v0000029702614d30_0;
+    %load/vec4 v0000029702613c50_0;
+    %store/vec4 v00000297026150f0_0, 0, 8;
+    %store/vec4 v0000029702614290_0, 0, 8;
+    %store/vec4 v00000297026143d0_0, 0, 2;
+    %callf/vec4 TD_loss_function_tb.model_pair_loss, S_0000029702560430;
+    %add;
+    %store/vec4 v0000029702613610_0, 0, 32;
+    %load/vec4 v0000029702613610_0;
+    %store/vec4 v0000029702614150_0, 0, 32;
+    %callf/vec4 TD_loss_function_tb.trunc8_value, S_0000029702555af0;
+    %store/vec4 v0000029702613bb0_0, 0, 32;
+    %wait E_00000297025a7520;
+    %delay 20, 0;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v00000297025c74b0_0, 0, 1;
+    %load/vec4 v0000029702613bb0_0;
+    %parti/s 8, 0, 2;
+    %store/vec4 v00000297025c7e10_0, 0, 8;
+    %pushi/vec4 116, 0, 32; draw_string_vec4
+    %pushi/vec4 2003774832, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1634300448, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1633903477, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1836412001, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1953066862, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 544039284, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1667786099, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %store/vec4 v00000297025c7690_0, 0, 256;
+    %fork TD_loss_function_tb.check_outputs, S_00000297025930a0;
+    %join;
+    %end;
+S_0000029702555af0 .scope function.vec4.u32, "trunc8_value" "trunc8_value" 3 218, 3 218 0, S_000002970258c6a0;
+ .timescale -9 -10;
+v0000029702614150_0 .var/i "acc_value", 31 0;
+; Variable trunc8_value is vec4 return value of scope S_0000029702555af0
+TD_loss_function_tb.trunc8_value ;
+    %load/vec4 v0000029702614150_0;
+    %ix/load 4, 7, 0;
+    %flag_set/imm 4, 0;
+    %shiftr/s 4;
+    %ret/vec4 0, 0, 32;  Assign to trunc8_value (store_vec4_to_lval)
+    %end;
+    .scope S_0000029702593230;
+T_9 ;
+    %wait E_00000297025a7a20;
+    %load/vec4 v0000029702614fb0_0;
+    %nor/r;
+    %flag_set/vec4 8;
+    %jmp/0xz  T_9.0, 8;
+    %pushi/vec4 0, 0, 15;
+    %assign/vec4 v00000297025c7f50_0, 10;
+    %pushi/vec4 0, 0, 8;
+    %assign/vec4 v0000029702614970_0, 10;
+    %pushi/vec4 0, 0, 1;
+    %assign/vec4 v0000029702613cf0_0, 10;
+    %jmp T_9.1;
+T_9.0 ;
+    %load/vec4 v00000297025c8770_0;
+    %nor/r;
+    %flag_set/vec4 8;
+    %jmp/0xz  T_9.2, 8;
+    %pushi/vec4 0, 0, 15;
+    %assign/vec4 v00000297025c7f50_0, 10;
+    %pushi/vec4 0, 0, 1;
+    %assign/vec4 v0000029702613cf0_0, 10;
+    %jmp T_9.3;
+T_9.2 ;
+    %pushi/vec4 0, 0, 1;
+    %assign/vec4 v0000029702613cf0_0, 10;
+    %load/vec4 v00000297025c88b0_0;
+    %load/vec4 v00000297025c8630_0;
+    %cmp/e;
+    %jmp/0xz  T_9.4, 4;
+    %pushi/vec4 0, 0, 15;
+    %assign/vec4 v00000297025c7f50_0, 10;
+    %load/vec4 v0000029702614830_0;
+    %assign/vec4 v0000029702614970_0, 10;
+    %pushi/vec4 1, 0, 1;
+    %assign/vec4 v0000029702613cf0_0, 10;
+    %jmp T_9.5;
+T_9.4 ;
+    %load/vec4 v00000297025c79b0_0;
+    %assign/vec4 v00000297025c7f50_0, 10;
+T_9.5 ;
+T_9.3 ;
+T_9.1 ;
+    %jmp T_9;
+    .thread T_9;
+    .scope S_000002970258c6a0;
+T_10 ;
+    %delay 25, 0;
+    %load/vec4 v0000029702614510_0;
+    %inv;
+    %store/vec4 v0000029702614510_0, 0, 1;
+    %jmp T_10;
+    .thread T_10;
+    .scope S_000002970258c6a0;
+T_11 ;
+    %vpi_call/w 3 42 "$dumpfile", "loss_function_tb.vcd" {0 0 0};
+    %vpi_call/w 3 43 "$dumpvars", 32'sb00000000000000000000000000000000, S_000002970258c6a0 {0 0 0};
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000029702614510_0, 0, 1;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000029702614f10_0, 0, 1;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000029702614b50_0, 0, 1;
+    %pushi/vec4 2, 0, 8;
+    %store/vec4 v00000297026152d0_0, 0, 8;
+    %pushi/vec4 0, 0, 7;
+    %store/vec4 v0000029702614e70_0, 0, 7;
+    %pushi/vec4 0, 0, 2;
+    %store/vec4 v0000029702614470_0, 0, 2;
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v0000029702614d30_0, 0, 8;
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v0000029702613c50_0, 0, 8;
+    %pushi/vec4 0, 0, 32;
+    %store/vec4 v0000029702613610_0, 0, 32;
+    %delay 20, 0;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v00000297025c74b0_0, 0, 1;
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v00000297025c7e10_0, 0, 8;
+    %pushi/vec4 0, 0, 32; draw_string_vec4
+    %pushi/vec4 0, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 0, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1919251301, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1948279660, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1700885107, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 544175476, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1886745715, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %store/vec4 v00000297025c7690_0, 0, 256;
+    %fork TD_loss_function_tb.check_outputs, S_00000297025930a0;
+    %join;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0000029702614f10_0, 0, 1;
+    %wait E_00000297025a7520;
+    %delay 20, 0;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v00000297025c74b0_0, 0, 1;
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v00000297025c7e10_0, 0, 8;
+    %pushi/vec4 0, 0, 32; draw_string_vec4
+    %pushi/vec4 0, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 0, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 0, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1768189029, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 543254132, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1701978226, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1702061428, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %store/vec4 v00000297025c7690_0, 0, 256;
+    %fork TD_loss_function_tb.check_outputs, S_00000297025930a0;
+    %join;
+    %fork TD_loss_function_tb.run_single_pair_test, S_0000029702557790;
+    %join;
+    %fork TD_loss_function_tb.run_two_pair_accumulation_test, S_0000029702557920;
+    %join;
+    %fork TD_loss_function_tb.run_negative_function_test, S_000002970255ddc0;
+    %join;
+    %fork TD_loss_function_tb.run_disable_clears_accumulator_test, S_000002970255dc30;
+    %join;
+    %vpi_call/w 3 68 "$display", "LOSS_FUNCTION TB PASSED" {0 0 0};
+    %vpi_call/w 3 69 "$finish" {0 0 0};
+    %end;
+    .thread T_11;
+# The file index is used to find the file name in the following table.
+:file_names 5;
+    "N/A";
+    "<interactive>";
+    "-";
+    "E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\tb\integration\loss_function_tb.sv";
+    "E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\core\loss_function.sv";

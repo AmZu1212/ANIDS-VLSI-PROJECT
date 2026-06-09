@@ -1,0 +1,127 @@
+#! /c/Source/iverilog-install/bin/vvp
+:ivl_version "12.0 (devel)" "(s20150603-1539-g2693dd32b)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision - 10;
+:vpi_module "C:\iverilog\lib\ivl\system.vpi";
+:vpi_module "C:\iverilog\lib\ivl\vhdl_sys.vpi";
+:vpi_module "C:\iverilog\lib\ivl\vhdl_textio.vpi";
+:vpi_module "C:\iverilog\lib\ivl\v2005_math.vpi";
+:vpi_module "C:\iverilog\lib\ivl\va_math.vpi";
+:vpi_module "C:\iverilog\lib\ivl\v2009.vpi";
+S_0000023c336dee60 .scope package, "$unit" "$unit" 2 1;
+ .timescale 0 0;
+S_0000023c336deff0 .scope module, "memory_mapper_tb" "memory_mapper_tb" 3 6;
+ .timescale -9 -10;
+P_0000023c33699900 .param/l "ADDR_WIDTH" 1 3 9, +C4<00000000000000000000000000001000>;
+P_0000023c33699938 .param/l "IN_WIDTH" 1 3 8, +C4<00000000000000000000000000001000>;
+v0000023c336cb260_0 .var/s "in_value", 7 0;
+v0000023c336cb300_0 .net "lut_addr", 7 0, v0000023c336b2460_0;  1 drivers
+S_0000023c336ba910 .scope task, "check_map" "check_map" 3 50, 3 50 0, S_0000023c336deff0;
+ .timescale -9 -10;
+v0000023c336df9f0_0 .var "expected_addr", 7 0;
+v0000023c336dfa90_0 .var/s "test_in", 7 0;
+v0000023c336baaa0_0 .var "test_name", 255 0;
+TD_memory_mapper_tb.check_map ;
+    %load/vec4 v0000023c336dfa90_0;
+    %store/vec4 v0000023c336cb260_0, 0, 8;
+    %delay 10, 0;
+    %load/vec4 v0000023c336cb300_0;
+    %load/vec4 v0000023c336df9f0_0;
+    %cmp/ne;
+    %jmp/0xz  T_0.0, 6;
+    %vpi_call/w 3 60 "$error", "FAIL: %0s | in=%0d addr=%0d expected_addr=%0d", v0000023c336baaa0_0, v0000023c336dfa90_0, v0000023c336cb300_0, v0000023c336df9f0_0 {0 0 0};
+    %vpi_call/w 3 62 "$finish" {0 0 0};
+    %jmp T_0.1;
+T_0.0 ;
+    %vpi_call/w 3 65 "$display", "PASS: %0s", v0000023c336baaa0_0 {0 0 0};
+T_0.1 ;
+    %end;
+S_0000023c336bab40 .scope module, "dut" "memory_mapper" 3 17, 4 4 0, S_0000023c336deff0;
+ .timescale -9 -10;
+    .port_info 0 /INPUT 8 "in_value";
+    .port_info 1 /OUTPUT 8 "lut_addr";
+P_0000023c33699580 .param/l "ADDR_WIDTH" 0 4 10, +C4<00000000000000000000000000001000>;
+P_0000023c336995b8 .param/l "IN_WIDTH" 0 4 9, +C4<00000000000000000000000000001000>;
+v0000023c336bacd0_0 .net/s "in_value", 7 0, v0000023c336cb260_0;  1 drivers
+v0000023c336b2460_0 .var "lut_addr", 7 0;
+E_0000023c336c80a0 .event anyedge, v0000023c336bacd0_0;
+S_0000023c336b2500 .scope task, "run_full_sweep" "run_full_sweep" 3 32, 3 32 0, S_0000023c336deff0;
+ .timescale -9 -10;
+v0000023c336b2690_0 .var "expected_addr", 7 0;
+v0000023c336b2730_0 .var/i "raw_val", 31 0;
+v0000023c336b27d0_0 .var/s "test_in", 7 0;
+TD_memory_mapper_tb.run_full_sweep ;
+    %pushi/vec4 4294967168, 0, 32;
+    %store/vec4 v0000023c336b2730_0, 0, 32;
+T_1.2 ;
+    %load/vec4 v0000023c336b2730_0;
+    %cmpi/s 127, 0, 32;
+    %flag_or 5, 4;
+    %jmp/0xz T_1.3, 5;
+    %load/vec4 v0000023c336b2730_0;
+    %pad/s 8;
+    %store/vec4 v0000023c336b27d0_0, 0, 8;
+    %load/vec4 v0000023c336b27d0_0;
+    %parti/s 1, 7, 4;
+    %inv;
+    %load/vec4 v0000023c336b27d0_0;
+    %parti/s 7, 0, 2;
+    %concat/vec4; draw_concat_vec4
+    %store/vec4 v0000023c336b2690_0, 0, 8;
+    %load/vec4 v0000023c336b27d0_0;
+    %store/vec4 v0000023c336dfa90_0, 0, 8;
+    %load/vec4 v0000023c336b2690_0;
+    %store/vec4 v0000023c336df9f0_0, 0, 8;
+    %pushi/vec4 0, 0, 32; draw_string_vec4
+    %pushi/vec4 0, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 0, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 0, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 0, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 26229, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 1819025523, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %pushi/vec4 2003133808, 0, 32; draw_string_vec4
+    %concat/vec4; draw_string_vec4
+    %store/vec4 v0000023c336baaa0_0, 0, 256;
+    %fork TD_memory_mapper_tb.check_map, S_0000023c336ba910;
+    %join;
+    %load/vec4 v0000023c336b2730_0;
+    %addi 1, 0, 32;
+    %store/vec4 v0000023c336b2730_0, 0, 32;
+    %jmp T_1.2;
+T_1.3 ;
+    %end;
+    .scope S_0000023c336bab40;
+T_2 ;
+    %wait E_0000023c336c80a0;
+    %load/vec4 v0000023c336bacd0_0;
+    %parti/s 1, 7, 4;
+    %inv;
+    %load/vec4 v0000023c336bacd0_0;
+    %parti/s 7, 0, 2;
+    %concat/vec4; draw_concat_vec4
+    %store/vec4 v0000023c336b2460_0, 0, 8;
+    %jmp T_2;
+    .thread T_2, $push;
+    .scope S_0000023c336deff0;
+T_3 ;
+    %vpi_call/w 3 23 "$dumpfile", "memory_mapper_tb.vcd" {0 0 0};
+    %vpi_call/w 3 24 "$dumpvars", 32'sb00000000000000000000000000000000, S_0000023c336deff0 {0 0 0};
+    %fork TD_memory_mapper_tb.run_full_sweep, S_0000023c336b2500;
+    %join;
+    %vpi_call/w 3 28 "$display", "MEMORY_MAPPER TB PASSED" {0 0 0};
+    %vpi_call/w 3 29 "$finish" {0 0 0};
+    %end;
+    .thread T_3;
+# The file index is used to find the file name in the following table.
+:file_names 5;
+    "N/A";
+    "<interactive>";
+    "-";
+    "E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\tb\unit\memory_mapper_tb.sv";
+    "E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\core\memory_mapper.sv";

@@ -1,0 +1,63 @@
+VCD info: dumpfile wave.vcd opened for output.
+Starting ANIDS APB Read/Write Test Bench...
+Wrote reg[0] = 0
+Wrote reg[1] = 1
+Wrote reg[2] = 2
+Wrote reg[3] = 3
+Wrote reg[4] = 4
+Wrote reg[5] = 5
+Wrote reg[6] = 6
+Wrote reg[7] = 7
+Wrote reg[1024] = 1024
+Wrote reg[2048] = 2048
+Wrote reg[3072] = 3072
+Wrote reg[4096] = 4096
+Wrote reg[5120] = 5120
+Wrote reg[6144] = 6144
+Wrote reg[7168] = 7168
+Wrote reg[8192] = 8192
+Wrote reg[9216] = 9216
+Wrote reg[10240] = 10240
+Wrote reg[11264] = 11264
+Wrote reg[12288] = 12288
+Wrote reg[13312] = 13312
+Wrote reg[14336] = 14336
+Wrote reg[15360] = 15360
+Wrote reg[16384] = 16384
+Wrote reg[16583] = 16583
+Write done. Starting readback and verification...
+PASS: reg[0] = 0
+PASS: reg[1] = 1
+PASS: reg[2] = 2
+PASS: reg[3] = 3
+PASS: reg[4] = 4
+PASS: reg[5] = 5
+PASS: reg[6] = 6
+PASS: reg[7] = 7
+PASS: reg[1024] = 0
+PASS: reg[2048] = 0
+PASS: reg[3072] = 0
+PASS: reg[4096] = 0
+PASS: reg[5120] = 0
+PASS: reg[6144] = 0
+PASS: reg[7168] = 0
+PASS: reg[8192] = 0
+PASS: reg[9216] = 0
+PASS: reg[10240] = 0
+PASS: reg[11264] = 0
+PASS: reg[12288] = 0
+PASS: reg[13312] = 0
+PASS: reg[14336] = 0
+PASS: reg[15360] = 0
+PASS: reg[16384] = 0
+PASS: reg[16583] = 199
+Test Bench completed.
+E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\tb\integration\apb_rw_tb.sv:109: $finish called at 8291975 (100ps)
+Compiling:
+C:\iverilog\bin\iverilog.EXE -g2012 -I E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS -I E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\tb -I E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\tb\integration -I E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\core -I E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\tb\data -I E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\tb\unit -I E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\tb\data\zero_order -s apb_rw_tb -o E:\Git-Repos\ANIDS-VLSI-PROJECT\Outputs\out\sim_apb_rw_tb.out E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\tb\integration\apb_rw_tb.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\anids_core.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\anids_top.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\core\hidden_layer.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\core\hidden_layer_unit.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\core\input_layer.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\core\lookup_layer.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\core\loss_function.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\core\memory_mapper.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\core\outlier_detector.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\core\output_layer.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\core\output_layer_processing_unit.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\core\pipeline_manager.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\core\relu_unit.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\core\spram8x256_cb.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\mem_fetch_unit.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\regfile.sv E:\Git-Repos\ANIDS-VLSI-PROJECT\ANIDS\src\result_status_encoder.sv
+Running simulation:
+
+VCD generated: E:\Git-Repos\ANIDS-VLSI-PROJECT\Outputs\vcd\apb_rw_tb.vcd
+To view (bash/mingw): gtkwave ./Outputs/vcd/apb_rw_tb.vcd
+To view (cmd/PowerShell): gtkwave "E:\Git-Repos\ANIDS-VLSI-PROJECT\Outputs\vcd\apb_rw_tb.vcd"
+Note: 'gtkwave' not found on PATH; not auto-launching.
