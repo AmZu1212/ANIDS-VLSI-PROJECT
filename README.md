@@ -18,23 +18,37 @@ ANIDS-VLSI-PROJECT/
 |   |   |-- result_status_encoder.sv
 |   |   `-- core/
 |   `-- tb/
+|       |-- data/
 |       |-- unit/
 |       |-- integration/
 |       |-- pipeline_timing_tb.sv
 |       `-- two_vector_test_tb.sv
 |-- ANIDS Model/
 |   |-- cpp/
+|   |   `-- anids_model.cpp
 |   |-- rtl/
+|   |   `-- anids_model_compare_tb.sv
 |   |-- tests/
-|   |-- README.md
+|   |-- Guide.md
+|   |-- Results.md
 |   `-- run_test
 |-- Documentation/
+|   |-- anids_model.md
+|   |-- testbenches.md
+|   |-- Programmers Guide.md
+|   |-- LUT_Programming_Guide.md
+|   |-- block descriptions.md
+|   |-- main block descriptions.md
+|   |-- COMPILE_RESULTS.md
+|   `-- sigmoid_lut_table.csv
 |-- TCL Scripts/
-|-- Saved ddc/
-|-- TSO_Reference/
+|   |-- load_ddc.tcl
+|   |-- load_design.tcl
+|   `-- load_pipeline_manager.tcl
 |-- outputs/
+|-- README.md
 |-- run.py
-`-- rtl_vs_cpp_results.md
+`-- .gitignore
 ```
 
 ## RTL Design
@@ -176,8 +190,8 @@ Detailed model documentation:
 
 ```text
 Documentation/anids_model.md
-ANIDS Model/README.md
-rtl_vs_cpp_results.md
+ANIDS Model/Guide.md
+ANIDS Model/Results.md
 ```
 
 ## Documentation
