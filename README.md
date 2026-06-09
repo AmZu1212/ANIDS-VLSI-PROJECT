@@ -1,56 +1,9 @@
 # ANIDS VLSI Project
 
-This repository contains a hardware implementation and verification environment for an ANIDS datapath. The project includes synthesizable SystemVerilog RTL, RTL unit and integration testbenches, timing-oriented system testbenches, a C++ integer comparison model, and documentation for the main design and verification flows.
+ANIDS stands for Anomaly Network Intrusion Detection System. A NIDS monitors network traffic in order to detect malicious activity, unauthorized access, or abnormal behavior. This project implements an ASIC-oriented hardware accelerator for an ANIDS datapath, based on an autoencoder-style anomaly detection model. The design receives a 128-bit input vector, processes it through a pipelined neural-network inference core, applies a programmable lookup-based activation function, calculates a reconstruction loss, and compares the loss against a programmable threshold to classify the input as anomalous or non-anomalous.
 
-The design is built around a pipelined processing flow. A 128-bit input vector is accepted through the DMA-style input interface, processed through the ANIDS core, mapped through a programmable lookup function, accumulated into a loss value, and compared against a programmed threshold to produce an anomaly/non-anomaly result.
+This repository contains the full hardware implementation and verification environment for the project, including synthesizable SystemVerilog RTL, RTL unit and integration testbenches, timing-oriented system testbenches, a C++ integer comparison model, and documentation for the main design and verification flows.
 
-## Repository Structure
-
-```text
-ANIDS-VLSI-PROJECT/
-|-- ANIDS/
-|   |-- anids_defines.vh
-|   |-- src/
-|   |   |-- anids_top.sv
-|   |   |-- anids_core.sv
-|   |   |-- mem_fetch_unit.sv
-|   |   |-- regfile.sv
-|   |   |-- result_status_encoder.sv
-|   |   `-- core/
-|   `-- tb/
-|       |-- data/
-|       |-- unit/
-|       |-- integration/
-|       |-- pipeline_timing_tb.sv
-|       `-- two_vector_test_tb.sv
-|-- ANIDS Model/
-|   |-- build/
-|   |-- cpp/
-|   |   `-- anids_model.cpp
-|   |-- rtl/
-|   |   `-- anids_model_compare_tb.sv
-|   |-- tests/
-|   |-- Guide.md
-|   |-- Results.md
-|   `-- run_test
-|-- Documentation/
-|   |-- ANIDS Model.md
-|   |-- Testbenches.md
-|   |-- Programmers Guide.md
-|   |-- LUT Programming Guide.md
-|   |-- Main Block Descriptions.md
-|   |-- Sub Block Descriptions.md
-|   |-- Synthesis Results.md
-|   `-- sigmoid lut data.csv
-|-- TCL Scripts/
-|   |-- load_ddc.tcl
-|   |-- load_design.tcl
-|   `-- load_pipeline_manager.tcl
-|-- outputs/
-|-- README.md
-|-- run.py
-`-- .gitignore
-```
 
 ## RTL Design
 
