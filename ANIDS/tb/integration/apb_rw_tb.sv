@@ -71,7 +71,7 @@ reg [`APB_DATA_WIDTH-1:0] result_data;
 
 initial begin
 	$dumpfile("wave.vcd");
-  	$dumpvars(0, apb_rw_tb);
+  	$dumpvars(1, apb_rw_tb);
 
 	$display("Starting ANIDS APB Read/Write Test Bench...");
 
@@ -82,7 +82,9 @@ initial begin
 	/// WRITE PHASE
 	for (idx = 0; idx < testRange; idx = idx + 1) begin
 		cpu_write_APB(idx, idx[`APB_DATA_WIDTH-1:0]);
-		$display("Wrote reg[%0d] = %0d", idx, idx);
+		if ((idx < 8) || (idx == testRange-1) || ((idx % 1024) == 0)) begin
+			$display("Wrote reg[%0d] = %0d", idx, idx);
+		end
 	end
 
 	$display("Write done. Starting readback and verification...");
@@ -96,7 +98,9 @@ initial begin
 			$error("FAIL: reg[%0d] read %0d, expected %0d", idx, result_data, idx);
 			$finish;
 		end else begin
-			$display("PASS: reg[%0d] = %0d", idx, result_data);
+			if ((idx < 8) || (idx == testRange-1) || ((idx % 1024) == 0)) begin
+				$display("PASS: reg[%0d] = %0d", idx, result_data);
+			end
 		end
 	end
 
