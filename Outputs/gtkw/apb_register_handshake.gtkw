@@ -1,0 +1,40 @@
+[*]
+[*] GTKWave preset: APB register handshake
+[*]
+[dumpfile] "E:/Git-Repos/ANIDS-VLSI-PROJECT/Outputs/vcd/apb_rw_tb.vcd"
+[savefile] "E:/Git-Repos/ANIDS-VLSI-PROJECT/Outputs/gtkw/apb_register_handshake.gtkw"
+[timestart] 24000
+[*] Markers: A-D=write reg[1], E-H=read reg[1]
+[*] A/E=setup, B/F=access, C/G=PREADY/data accepted, D/H=cleanup
+*0.000000 28500 28500 33500 38500 48500 414628500 414633500 414638500 414648500 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[size] 1365 900
+[pos] -1 -1
+[sst_expanded] 1
+[sst_width] 260
+[signals_width] 260
+[pattern_trace] 1
+[pattern_trace] 0
+@200
+-APB register handshake
+@28
+apb_rw_tb.sys_clk
+apb_rw_tb.sys_reset_n
+@200
+-APB control
+@28
+apb_rw_tb.PSEL
+apb_rw_tb.PENABLE
+apb_rw_tb.PWRITE
+apb_rw_tb.PREADY
+@200
+-APB address/data
+@22
+apb_rw_tb.PADDR[15:0]
+apb_rw_tb.PWDATA[7:0]
+apb_rw_tb.PRDATA[7:0]
+apb_rw_tb.result_data[7:0]
+@200
+-Test progress
+@22
+apb_rw_tb.idx[31:0]
+apb_rw_tb.testRange[31:0]

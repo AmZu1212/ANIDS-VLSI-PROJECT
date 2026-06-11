@@ -1,0 +1,43 @@
+[*]
+[*] GTKWave preset: DMA fetch handshake
+[*]
+[dumpfile] "E:/Git-Repos/ANIDS-VLSI-PROJECT/Outputs/vcd/pipeline_timing_tb.vcd"
+[savefile] "E:/Git-Repos/ANIDS-VLSI-PROJECT/Outputs/gtkw/dma_fetch_handshake.gtkw"
+[timestart] 190000
+[*] Markers: A=start_core, B=fetch request, C=dma_ack, D=dma_valid, E=mfu_updated, F=second fetch request, G=second dma_ack
+*0.000000 228500 228500 233500 238500 241000 243500 253500 258500 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[size] 1365 900
+[pos] -1 -1
+[sst_expanded] 1
+[sst_width] 300
+[signals_width] 310
+[pattern_trace] 1
+[pattern_trace] 0
+@200
+-DMA/vector fetch handshake
+@28
+pipeline_timing_tb.sys_clk
+pipeline_timing_tb.sys_reset_n
+pipeline_timing_tb.dut.core_inst.start_core
+@200
+-Fetch request and accept
+@28
+pipeline_timing_tb.dut.core_fetch
+pipeline_timing_tb.dut.mfu_ready
+pipeline_timing_tb.dma_ack
+pipeline_timing_tb.dma_valid
+pipeline_timing_tb.dut.mfu_updated
+@200
+-Vector data
+@22
+pipeline_timing_tb.dma_data[127:0]
+pipeline_timing_tb.dut.mfu_features[127:0]
+@200
+-Pipeline manager fetch state
+@28
+pipeline_timing_tb.dut.core_inst.pipeline_manager_inst.fetch
+pipeline_timing_tb.dut.core_inst.pipeline_manager_inst.fetch_inflight
+pipeline_timing_tb.dut.core_inst.pipeline_manager_inst.start_epoch
+@22
+pipeline_timing_tb.dut.core_inst.pipeline_manager_inst.fifo_count[2:0]
+pipeline_timing_tb.dut.core_inst.pipeline_manager_inst.counter[6:0]

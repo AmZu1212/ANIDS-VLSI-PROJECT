@@ -1,0 +1,45 @@
+[*]
+[*] GTKWave preset: result completion/status handshake
+[*]
+[dumpfile] "E:/Git-Repos/ANIDS-VLSI-PROJECT/Outputs/vcd/pipeline_timing_tb.vcd"
+[savefile] "E:/Git-Repos/ANIDS-VLSI-PROJECT/Outputs/gtkw/result_completion_handshake.gtkw"
+[timestart] 1520000
+[*] Markers: A=loss_ready, B=core_done/done, C=status_wr_en, D=RESULT_REG update
+*0.000000 1533500 1533500 1538500 1543500 1548500 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[size] 1365 900
+[pos] -1 -1
+[sst_expanded] 1
+[sst_width] 310
+[signals_width] 330
+[pattern_trace] 1
+[pattern_trace] 0
+@200
+-Core result completion handshake
+@28
+pipeline_timing_tb.sys_clk
+pipeline_timing_tb.sys_reset_n
+pipeline_timing_tb.dut.core_inst.start_core
+@200
+-Completion path
+@28
+pipeline_timing_tb.dut.core_inst.loss_ready
+pipeline_timing_tb.dut.core_done
+pipeline_timing_tb.done
+pipeline_timing_tb.dut.core_outlier_pulse
+@200
+-Status register writeback
+@28
+pipeline_timing_tb.dut.status_wr_en
+pipeline_timing_tb.dut.regfile_hw_wr_en
+@22
+pipeline_timing_tb.dut.status_wr_data[7:0]
+pipeline_timing_tb.dut.regfile_hw_wr_addr[15:0]
+pipeline_timing_tb.dut.regfile_hw_wr_data[7:0]
+pipeline_timing_tb.result_reg_value[7:0]
+@200
+-Measured timing counters
+@22
+pipeline_timing_tb.loss_ready_cycle[31:0]
+pipeline_timing_tb.done_cycle[31:0]
+pipeline_timing_tb.status_wr_cycle[31:0]
+pipeline_timing_tb.result_reg_cycle[31:0]
