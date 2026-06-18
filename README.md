@@ -4,6 +4,7 @@ ANIDS stands for Anomaly Network Intrusion Detection System. A NIDS monitors net
 
 This repository contains the full hardware implementation and verification environment for the project, including synthesizable SystemVerilog RTL, RTL unit and integration testbenches, timing-oriented system testbenches, a C++ integer comparison model, and documentation for the main design and verification flows.
 
+<img width="830" height="788" alt="image" src="https://github.com/user-attachments/assets/b342075a-53b3-445f-997c-4841ddbd97d4" />
 
 ## RTL Design
 
