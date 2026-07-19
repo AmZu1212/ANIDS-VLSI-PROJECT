@@ -1,6 +1,8 @@
 # ANIDS VLSI Project
 
-ANIDS stands for Anomaly Network Intrusion Detection System. A NIDS monitors network traffic in order to detect malicious activity, unauthorized access, or abnormal behavior. This project implements an ASIC-oriented hardware accelerator for an ANIDS datapath, based on an autoencoder-style anomaly detection model. The design receives a 128-bit input vector, processes it through a pipelined neural-network inference core, applies a programmable lookup-based activation function, calculates a reconstruction loss, and compares the loss against a programmable threshold to classify the input as anomalous or non-anomalous.
+This project implements an ASIC-oriented hardware accelerator for an ANIDS(stands for Anomaly Network Intrusion Detection System), based on an autoencoder-style anomaly detection model. 
+
+The design receives a 128-bit input vector, processes it through a pipelined neural-network inference core, applies a programmable lookup-based activation function, calculates a reconstruction loss, and compares the loss against a programmable threshold to classify the input as anomalous or non-anomalous.
 
 This repository contains the full hardware implementation and verification environment for the project, including synthesizable SystemVerilog RTL, RTL unit and integration testbenches, timing-oriented system testbenches, a C++ integer comparison model, and documentation for the main design and verification flows.
 
