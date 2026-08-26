@@ -207,3 +207,4 @@ Pipe fill latency to RESULT_REG = 264 cycles = 1.32 us at 5 ns
 Steady-state result gap         = 64 cycles  = 320 ns at 5 ns
 Throughput                      = 400 Mb/s
 ```
+![Bottom Banner](https://github.com/user-attachments/assets/37fdd0cc-1e97-464d-82f6-6b3a6e116ac4)
